@@ -1,3 +1,8 @@
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,7 +18,9 @@ public class Musica {
     long date;//8
     String[] genero; //vairos generos (2)
     float dance;
+    String hash;
 
+    
     public Musica() {
         this.id = idCount++; //preenche o ID dinamicamente
         this.nome = "Vazio";
@@ -22,6 +29,7 @@ public class Musica {
         this.date = 0;
         this.dance = 0;
         this.genero = iniciarGenero();
+        this.hash = hash;
     }
 
     int getSizeBytes(){
@@ -29,7 +37,7 @@ public class Musica {
     }
 
 
-    public Musica(String nome, String artista, int popular, String date, String genero, float dance) {
+    public Musica(String nome, String artista, int popular, String date, String genero, float dance, String hash) {
         this.id = idCount++;
         this.nome = nome;
         this.artista = artista;
@@ -46,6 +54,7 @@ public class Musica {
         }
         this.genero = genero.split(";");
         this.dance = dance;
+        this.hash = hash;
     }
 
     private static String[] iniciarGenero(){
@@ -80,7 +89,34 @@ public class Musica {
         "\nPopular: " + popular + 
         "\nDate: " + timestampConv(date) + 
         "\nDance: " + dance +
-        "\nGenero: " + genero[0] + ", " + genero[1]; 
+        "\nGenero: " + genero[0] + ", " + genero[1] + 
+        "\nHash: " + hash;
+    }
+
+    public byte[] toByteArray() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeUTF(nome);
+            dos.writeUTF(artista);
+            dos.writeInt(popular);
+            dos.writeLong(date);
+            dos.writeUTF(genero[0] +";" + genero[1]);
+            dos.writeFloat(dance);
+            dos.writeUTF(hash);
+        return baos.toByteArray();
+    }
+
+    public void fromByteArray(byte[] ba) throws IOException {
+        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
+        DataInputStream dis = new DataInputStream(bais);
+            nome = dis.readUTF();
+            artista = dis.readUTF();
+            popular = dis.readInt();
+            date = dis.readLong();
+            String genero2 = dis.readUTF();
+            genero = genero2.split(";");
+            dance = dis.readFloat();
+            hash = dis.readUTF();
     }
 
     
