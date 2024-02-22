@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Scanner;
 
+
 public class Main {
 
     public static String[] lerArq(String path) {

@@ -6,11 +6,11 @@ import java.time.format.DateTimeFormatter;
 
 public class Musica {
     static int idCount = 0; //contador de id
-    int id; 
-    String nome; 
+    int id; //4 
+    String nome;  
     String artista; 
-    int popular;
-    long date;
+    int popular;//4
+    long date;//8
     String[] genero; //vairos generos (2)
     float dance;
 
@@ -22,6 +22,10 @@ public class Musica {
         this.date = 0;
         this.dance = 0;
         this.genero = iniciarGenero();
+    }
+
+    int getSizeBytes(){
+           return 4 + nome.length() + artista.length() + 4 + 8 + genero[0].length() + genero[1].length() + 4;   
     }
 
 
