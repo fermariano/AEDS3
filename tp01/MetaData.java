@@ -21,7 +21,7 @@ public class MetaData {
 
     void writeMetaData(DataOutputStream dos, byte[] sizebytes) {
         try {
-            dos.writeBoolean(true); // Escreve a lapide como verdadeira
+            dos.writeBoolean(false); // Escreve a lapide como falsa!
             dos.writeInt(sizebytes.length); // Escreve o tamanho do registro da música
         } catch (IOException e) {
             System.out.println("Erro ao escrever os metadados: " + e.getMessage());
