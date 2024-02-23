@@ -109,8 +109,8 @@ public class Musica {
         dos.writeUTF(artista);
         dos.writeInt(popular);
         dos.writeLong(date);
-        dos.writeUTF(genero[0]);
-        dos.writeUTF(genero[1]);
+        String newgenero = genero[0] + ";" + genero[1];
+        dos.writeUTF(newgenero);
         dos.writeFloat(dance);
         dos.writeUTF(hash);
 

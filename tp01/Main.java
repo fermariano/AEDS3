@@ -73,19 +73,17 @@ public class Main {
 
             arq2 = new FileInputStream("songs.db");
             dis = new DataInputStream(arq2);
-            int tam; // variavel para delimitar o tamanho do registro
-            boolean lapide;
+            
 
             int idReg = dis.readInt();
 
             while (dis.available() > 0) { // enquanto tiver registros no arquivo
-                tam = dis.readInt(); // le o tamanho do registro
-                lapide = dis.readBoolean();
-                    ba = new byte[tam]; // cria um array de bytes com o tam do registro
-                    dis.read(ba); // le o registro
-                    teste.fromByteArray(ba); // transforma para string
-                    System.out.println(teste);
-                
+                meta.readMetaData(dis); // le os metadados
+                 ba = new byte[meta.sizeBytes]; // cria um array de bytes com o tam do registro
+                dis.read(ba); // le o registro
+                teste = Musica.fromByteArray(ba); // transforma para string
+                System.out.println(teste);
+                System.out.println(meta);   
             }
             
 

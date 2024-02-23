@@ -9,33 +9,15 @@ public class MetaData {
         this.sizeBytes = 0;
     }
 
-    void readMetaData(RandomAccessFile file) {
+    void readMetaData(DataInputStream dis) {
         try {
-            file.seek(0);
-            this.lapide = file.readBoolean();
-            this.sizeBytes = file.readInt();
+            this.lapide = dis.readBoolean(); // Lê a lapide
+            this.sizeBytes = dis.readInt(); // Lê o tamanho do registro da música
         } catch (IOException e) {
             System.out.println("Erro ao ler os metadados: " + e.getMessage());
         }
     }
 
-    boolean readLapide(RandomAccessFile file) {
-        try {
-            this.lapide = file.readBoolean();
-        } catch (IOException e) {
-            System.out.println("Erro ao ler a validade: " + e.getMessage());
-        }
-        return this.lapide;
-    }
-
-    int readSizeBytes(RandomAccessFile file) {
-        try {
-            this.sizeBytes = file.readInt();
-        } catch (IOException e) {
-            System.out.println("Erro ao ler o tamanho: " + e.getMessage());
-        }
-        return this.sizeBytes;
-    }
 
     void writeMetaData(DataOutputStream dos, byte[] sizebytes) {
         try {
@@ -44,5 +26,10 @@ public class MetaData {
         } catch (IOException e) {
             System.out.println("Erro ao escrever os metadados: " + e.getMessage());
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Lapide: " + lapide + "\nTamanho: " + sizeBytes;
     }
 }
