@@ -87,7 +87,7 @@ public class Main {
                     ba = new byte[tam]; // cria um array de bytes com o tam do registro
                     dis.read(ba); // le o registro
                     teste.fromByteArray(ba); // transforma para string
-                    if (!teste.lapide) System.out.println(teste); // printa
+                    System.out.println(teste); // printa
                      
                 
             }
