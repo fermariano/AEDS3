@@ -10,16 +10,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class Musica {
-    static int idCount = 0; //contador de id
+    private static int idCount = 0; //contador de ID
     int id; //4 
     String nome;  
     String artista; 
     int popular;//4
     long date;//8
-    String[] genero; //vairos generos (2)
+    String []genero; //vairos generos (2)
     float dance;
     String hash;
-    boolean lapide;
     
     public Musica() {
         this.id = idCount++; //preenche o ID dinamicamente
@@ -30,11 +29,6 @@ public class Musica {
         this.dance = 0;
         this.genero = iniciarGenero();
         this.hash = "";
-        this.lapide = false;
-    }
-
-    int getSizeBytes(){
-           return 4 + nome.length() + artista.length() + 4 + 8 + genero[0].length() + genero[1].length() + 4;   
     }
 
 
@@ -56,7 +50,17 @@ public class Musica {
         this.genero = genero.split(";");
         this.dance = dance;
         this.hash = hash;
-        this.lapide = false;
+    }
+
+    public Musica(int id, String nome, String artista, int popular, long date, String genero, float dance, String hash) {
+        this.id = id;
+        this.nome = nome;
+        this.artista = artista;
+        this.popular = popular;
+        this.date = date;
+        this.genero = genero.split(";");
+        this.dance = dance;
+        this.hash = hash;
     }
 
     private static String[] iniciarGenero(){
@@ -98,29 +102,43 @@ public class Musica {
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-            dos.writeBoolean(lapide);
-            dos.writeUTF(nome);
-            dos.writeUTF(artista);
-            dos.writeInt(popular);
-            dos.writeLong(date);
-            dos.writeUTF(genero[0] +";" + genero[1]);
-            dos.writeFloat(dance);
-            dos.writeUTF(hash);
-        return baos.toByteArray();
+
+        // Escreva os campos na ordem correta
+        dos.writeInt(id);
+        dos.writeUTF(nome);
+        dos.writeUTF(artista);
+        dos.writeInt(popular);
+        dos.writeLong(date);
+        dos.writeUTF(genero[0]);
+        dos.writeUTF(genero[1]);
+        dos.writeFloat(dance);
+        dos.writeUTF(hash);
+
+        dos.close(); // Feche o DataOutputStream
+        return baos.toByteArray(); // Retorne o array de bytes
     }
 
-    public void fromByteArray(byte[] ba) throws IOException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
-        DataInputStream dis = new DataInputStream(bais);
-            lapide = dis.readBoolean();
-            nome = dis.readUTF();
-            artista = dis.readUTF();
-            popular = dis.readInt();
-            date = dis.readLong();
-            String genero2 = dis.readUTF();
-            genero = genero2.split(";");
-            dance = dis.readFloat();
-            hash = dis.readUTF();
+    public static Musica fromByteArray(byte[] bytes) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            DataInputStream dis = new DataInputStream(bais);
+    
+            // Leia os campos na ordem correta
+            int id = dis.readInt();
+            String nome = dis.readUTF();
+            String artista = dis.readUTF();
+            int popular = dis.readInt();
+            long date = dis.readLong();
+            String genero = dis.readUTF();
+            float dance = dis.readFloat();
+            String hash = dis.readUTF();
+    
+            dis.close(); // Feche o DataInputStream
+            return new Musica(id, nome, artista, popular, date, genero, dance, hash);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null; // Ou lançar uma exceção personalizada, dependendo do seu caso de uso
+        }
     }
 
     

@@ -1,55 +1,48 @@
-import java.io.RandomAccessFile;
+import java.io.*;
 
 public class MetaData {
-    boolean valido;
+    boolean lapide;
     int sizeBytes;
 
-    MetaData(){
-        this.valido = false;
+    MetaData() {
+        this.lapide = false;
         this.sizeBytes = 0;
     }
 
-    MetaData ReadMetaData(RandomAccessFile file){
-        try{
+    void readMetaData(RandomAccessFile file) {
+        try {
             file.seek(0);
-            this.valido = file.readBoolean();
+            this.lapide = file.readBoolean();
             this.sizeBytes = file.readInt();
-        }catch(Exception e){
+        } catch (IOException e) {
             System.out.println("Erro ao ler os metadados: " + e.getMessage());
         }
-        return this;
     }
 
-    boolean ReadValidez(RandomAccessFile file){
-        try{
-            this.valido = file.readBoolean();
-        }catch(Exception e){
-            System.out.println("Erro ao ler a validez: " + e.getMessage());
+    boolean readLapide(RandomAccessFile file) {
+        try {
+            this.lapide = file.readBoolean();
+        } catch (IOException e) {
+            System.out.println("Erro ao ler a validade: " + e.getMessage());
         }
-        return this.valido;
+        return this.lapide;
     }
 
-    int ReadSizeBytes(RandomAccessFile file){ //receb o RAF com cabeçote já definido para leitura
-        try{
+    int readSizeBytes(RandomAccessFile file) {
+        try {
             this.sizeBytes = file.readInt();
-        }catch(Exception e){
+        } catch (IOException e) {
             System.out.println("Erro ao ler o tamanho: " + e.getMessage());
         }
         return this.sizeBytes;
     }
 
-    void WriteMetaData(RandomAccessFile file, Musica musica){ //receb o RAF com cabeçote já definido para leitura
-        try{
-            file.writeBoolean(true);
-            file.writeInt(musica.getSizeBytes());
-        }catch(Exception e){
+    void writeMetaData(DataOutputStream dos, byte[] sizebytes) {
+        try {
+            dos.writeBoolean(true); // Escreve a lapide como verdadeira
+            dos.writeInt(sizebytes.length); // Escreve o tamanho do registro da música
+        } catch (IOException e) {
             System.out.println("Erro ao escrever os metadados: " + e.getMessage());
         }
     }
-    
-
-    public static void main(String[] args) {
-        System.out.println(System.currentTimeMillis());
-    }
-    
 }

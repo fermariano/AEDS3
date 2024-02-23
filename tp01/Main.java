@@ -6,17 +6,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Scanner;
 
-
 public class Main {
 
     // função que le o arquivo CSV
-    public static String[] lerArq(String path) {
+    public static String[] lerCSV(String path) {
         File file = new File(path); // le o arquivo
         String[] arrData = new String[33000]; // array com linha por linha do arquivo
-        int i = 0; 
+        int i = 0;
         try {
-            Scanner scanner = new Scanner(file); 
-            scanner.nextLine(); 
+            Scanner scanner = new Scanner(file);
+            scanner.nextLine();
             while (scanner.hasNext()) {
                 arrData[i] = scanner.nextLine(); // le linha por linha e salva no array
                 i++;
@@ -27,24 +26,24 @@ public class Main {
         }
         return arrData;
     }
+
     
-
-
+    public static Musica[] lerFile(){
+        
+    }
+    
+    
     public static void main(String[] args) {
 
-        String[] arrData = lerArq("spotSongs.csv"); // le o arquivo e cada posiçao é uma linha
+        String[] arrData = lerCSV("spotSongs.csv"); // le o arquivo e cada posiçao é uma linha
         Musica[] musicaData = new Musica[arrData.length]; // array com todas as musicas
-        int cont = 0;
-        
-        for (int i = 0; i < arrData.length && arrData[i] != null; i++) {
-                String[] atributos = arrData[i].split(","); // da split em cada virgula para pegar os atributos
-                    // cria o objeto
-                    musicaData[i] = new Musica(atributos[0], atributos[1], Integer.parseInt(atributos[2]), atributos[3], atributos[4], Float.parseFloat(atributos[5]), atributos[6]);
-                    cont++;
-            }
 
-        
-        
+        for (int i = 0; i < arrData.length && arrData[i] != null; i++) {
+            String[] atributos = arrData[i].split(","); // da split em cada virgula para pegar os atributos
+            // cria o objeto
+            musicaData[i] = new Musica(atributos[0], atributos[1], Integer.parseInt(atributos[2]), atributos[3],
+                    atributos[4], Float.parseFloat(atributos[5]), atributos[6]);
+        }
 
         // classes que serao utilizadas para leitura/escrita
         FileOutputStream arq;
@@ -53,50 +52,29 @@ public class Main {
         DataInputStream dis;
         byte[] ba;
 
-        MetaData meta;
+        MetaData meta = new MetaData();
 
-            
         try {
 
             // escrita
             arq = new FileOutputStream("songs.db");
             dos = new DataOutputStream(arq);
-            
-            for (int i = 0; i < musicaData.length && musicaData[i]!= null; i++) {
-                meta = new MetaData();
-                
+
+            for (int i = 0; i < musicaData.length && musicaData[i] != null; i++) {
                 ba = musicaData[i].toByteArray(); // transforma o objeto em array de bytes
-                dos.writeInt(ba.length); // grava o tamanho em bytes do registro
+                meta.writeMetaData(dos, ba);
                 dos.write(ba); // grava o registro
-                
             }
 
             arq.close(); // fecha o arquivo
 
             // leitura
 
-            Musica teste = new Musica(); // cria o objeto que vai ser salvo os registros
-
-            arq2 = new FileInputStream("songs.db");
-            dis = new DataInputStream(arq2);
-            int tam; // variavel para delimitar o tamanho do registro
-
-            while (dis.available() > 0) { // enquanto tiver registros no arquivo
-                tam = dis.readInt(); // le o tamanho do registro
-
-                    ba = new byte[tam]; // cria um array de bytes com o tam do registro
-                    dis.read(ba); // le o registro
-                    teste.fromByteArray(ba); // transforma para string
-                    System.out.println(teste); // printa
-                     
-                
-            }
-
             
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        
+
     }
 }
