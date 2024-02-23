@@ -19,7 +19,7 @@ public class Musica {
     String[] genero; //vairos generos (2)
     float dance;
     String hash;
-
+    boolean lapide;
     
     public Musica() {
         this.id = idCount++; //preenche o ID dinamicamente
@@ -29,7 +29,8 @@ public class Musica {
         this.date = 0;
         this.dance = 0;
         this.genero = iniciarGenero();
-        this.hash = hash;
+        this.hash = "";
+        this.lapide = false;
     }
 
     int getSizeBytes(){
@@ -55,6 +56,7 @@ public class Musica {
         this.genero = genero.split(";");
         this.dance = dance;
         this.hash = hash;
+        this.lapide = false;
     }
 
     private static String[] iniciarGenero(){
@@ -96,6 +98,7 @@ public class Musica {
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeBoolean(lapide);
             dos.writeUTF(nome);
             dos.writeUTF(artista);
             dos.writeInt(popular);
@@ -109,6 +112,7 @@ public class Musica {
     public void fromByteArray(byte[] ba) throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream dis = new DataInputStream(bais);
+            lapide = dis.readBoolean();
             nome = dis.readUTF();
             artista = dis.readUTF();
             popular = dis.readInt();
