@@ -11,7 +11,7 @@ public class Main {
     // função que le o arquivo CSV
     public static String[] lerCSV(String path) {
         File file = new File(path); // le o arquivo
-        String[] arrData = new String[33000]; // array com linha por linha do arquivo
+        String[] arrData = new String[32254]; // array com linha por linha do arquivo
         int i = 0;
         try {
             Scanner scanner = new Scanner(file);
@@ -28,7 +28,7 @@ public class Main {
     }
 
     
-    public static Musica[] lerFile(){
+    public static void lerFile(){
         
     }
     
@@ -59,7 +59,7 @@ public class Main {
             // escrita
             arq = new FileOutputStream("songs.db");
             dos = new DataOutputStream(arq);
-
+            dos.writeInt(musicaData[musicaData.length - 1].id); //
             for (int i = 0; i < musicaData.length && musicaData[i] != null; i++) {
                 ba = musicaData[i].toByteArray(); // transforma o objeto em array de bytes
                 meta.writeMetaData(dos, ba);
