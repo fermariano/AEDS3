@@ -1,28 +1,36 @@
 import java.io.*;
-
+import java.io.RandomAccessFile;
 public class MetaData {
     boolean lapide;
     int sizeBytes;
+    RandomAccessFile raf;
 
     MetaData() {
         this.lapide = false;
         this.sizeBytes = 0;
     }
 
-    void readMetaData(DataInputStream dis) {
+    MetaData(RandomAccessFile raf) {
+        this.lapide = false;
+        this.sizeBytes = 0;
+        this.raf = raf;
+
+    }
+
+    void readMetaData() {
         try {
-            this.lapide = dis.readBoolean(); // Lê a lapide
-            this.sizeBytes = dis.readInt(); // Lê o tamanho do registro da música
+            this.lapide = raf.readBoolean(); // Lê a lapide
+            this.sizeBytes = raf.readInt(); // Lê o tamanho do registro da música
         } catch (IOException e) {
             System.out.println("Erro ao ler os metadados: " + e.getMessage());
         }
     }
 
 
-    void writeMetaData(DataOutputStream dos, byte[] sizebytes) {
+    void writeMetaData(byte[] sizebytes) {
         try {
-            dos.writeBoolean(false); // Escreve a lapide como falsa!
-            dos.writeInt(sizebytes.length); // Escreve o tamanho do registro da música
+            raf.writeBoolean(false);
+            raf.writeInt(sizebytes.length);
         } catch (IOException e) {
             System.out.println("Erro ao escrever os metadados: " + e.getMessage());
         }
