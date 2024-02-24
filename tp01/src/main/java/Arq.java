@@ -15,8 +15,8 @@ public class Arq {
 
 
 
-    public static void Iniciar(String file){
-        file = file;
+    public static void Iniciar(String filex){
+        file = filex;
         try {
             raf = new RandomAccessFile(file, "rw");
             status = true;
@@ -36,6 +36,7 @@ public class Arq {
             int idReg = raf.readInt(); // Lê o último ID adicionado
             System.out.println("Ultimo ID adicionado: " + idReg);
             while (raf.getFilePointer() < raf.length()) { // Enquanto houver registros no arquivo
+
                 meta.readMetaData(); // Lê os metadados
                 byte[] ba = new byte[meta.sizeBytes]; // Cria um array de bytes com o tamanho do registro
                 raf.readFully(ba); // Lê o registro completo
@@ -50,10 +51,10 @@ public class Arq {
         }
     }
 
+
     public static boolean addRegistro(String str) {
         byte[] ba;
         try {
-           
             
             ba = Musica.criarObjeto(str).toByteArray(); //atualiza lastID na classe mas não no arquivo
             writeLastID(Musica.getLastID()); //atualiza no arquivo

@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class InterfaceMenu extends JFrame {
+    private static boolean Running = true;
     private JTextField nomeTextField = new JTextField(20);
     private JTextField artistaTextField = new JTextField(20);
     private JTextField popularidadeTextField = new JTextField(20);
@@ -15,6 +16,8 @@ public class InterfaceMenu extends JFrame {
     private JButton atualizarButton = new JButton("Atualizar");
     private JButton pesquisarButton = new JButton("Pesquisar");
     private JButton deletarButton = new JButton("Deletar");
+    private JButton listarButton = new JButton("Listar Registros");
+
 
     public InterfaceMenu() {
         setTitle("CRUD Swing");
@@ -81,6 +84,10 @@ public class InterfaceMenu extends JFrame {
         gbc.gridy = 10;
         add(deletarButton, gbc);
 
+        gbc.gridy = 11;
+        add(listarButton, gbc);
+
+
         adicionarButton.setBackground(new Color(30, 144, 255));
         adicionarButton.setForeground(Color.WHITE);
 
@@ -93,18 +100,86 @@ public class InterfaceMenu extends JFrame {
         deletarButton.setBackground(new Color(30, 144, 255));
         deletarButton.setForeground(Color.WHITE);
 
+        listarButton.setBackground(new Color(30, 144, 255));
+        listarButton.setForeground(Color.WHITE);
+
         Font buttonFont = new Font("Arial", Font.BOLD, 12);
         adicionarButton.setFont(buttonFont);
         atualizarButton.setFont(buttonFont);
         pesquisarButton.setFont(buttonFont);
         deletarButton.setFont(buttonFont);
+        listarButton.setFont(buttonFont);
 
         setVisible(true);
+
+
+    adicionarButton.addActionListener(new ActionListener() {
+    @Override
+        public void actionPerformed(ActionEvent e) {
+            String nome = nomeTextField.getText();
+            String artista = artistaTextField.getText();
+            String popularidade = popularidadeTextField.getText();
+            String dataLancamento = dataLancamentoTextField.getText();
+            String genero = generoTextField.getText();
+            String dancabilidade = dancabilidadeTextField.getText();
+            String hash = hashTextField.getText();
+
+            // Aqui você pode reunir todas essas informações em uma única string
+            String informacoes = nome + "," +
+                                 artista + "," +
+                                 popularidade + "," +
+                                  dataLancamento + "," +
+                                 genero + "," +
+                                 dancabilidade + "," +
+                                hash;
+
+            // Exibir a string com as informações reunidas
+            System.out.println("Informações reunidas:\n" + informacoes + "\n\n");
+
+
+
+            Arq.addRegistro(informacoes);
+        }
+    });
+        atualizarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Adicionar função aqui
+                System.out.println("Botão 'Atualizar' clicado!");
+            }
+        });
+        
+        pesquisarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Adicionar função aqui
+                System.out.println("Botão 'Pesquisar' clicado!");
+            }
+        });
+        
+        deletarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Adicionar função aqui
+                System.out.println("Botão 'Deletar' clicado!");
+            }
+        });
+
+        listarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Adicionar função aqui
+                Arq.PrintarRegistros();
+            }
+        });
     }
+
+    
 
     public boolean Fechar() {
         try {
             this.dispose();
+            Running = false;
             System.out.println("Janela fechada com sucesso!");
             return true;
         } catch (Exception e) {
@@ -113,7 +188,16 @@ public class InterfaceMenu extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String args[]) {
+        
         SwingUtilities.invokeLater(InterfaceMenu::new);
+        Arq.Iniciar("songs.db");
+
+        System.out.println("ultimo ID inserido foi: " + Musica.getLastID());
+        while (Running) {
+            
+        }
+
+        Arq.Finalizar();
     }
 }
