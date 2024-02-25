@@ -38,18 +38,18 @@ public class Arq {
             long seekSaver = 0;
             long metaSeek = 0;
 
-            for (; idSeacher != ID; raf.seek(raf.getFilePointer() + (meta.sizeBytes - 4))) { // pula os bytes de
-                                                                                             // registro ate achar o ID
+            for (; idSeacher != ID || meta.lapide; raf.seek(raf.getFilePointer() + (meta.sizeBytes - 4))) { // pula os
+                                                                                                            // bytes de
+                // registro ate achar o ID
                 metaSeek = raf.getFilePointer(); // salva a posição do inicio da lapide
-                meta.readMetaData();// -4 para não contar os bytes do ID
+                meta.readMetaData(); // le os metadados
                 seekSaver = raf.getFilePointer(); // salva a posição do inicio do registro
-                idSeacher = raf.readInt();
+                idSeacher = raf.readInt(); // le o ID
             }
-            
-            // achpu ID
+
+            // achou ID
             raf.seek(seekSaver); // retorna a posição do inicio do registro
             Musica nova = Musica.StringToMusica(newSong); // cria um novo objeto com a string de parametro
-            nova.id = ID; // seta o ID do novo objeto
             int novaSize = nova.toByteArray().length;
 
             if (novaSize <= meta.sizeBytes) { // pode sobrescrever
@@ -63,7 +63,7 @@ public class Arq {
             }
 
         } catch (IOException e) { // raf buscou ID até não encontrar
-            System.out.println("Musica não Encontrada"+"ou" + e.getMessage());
+            System.out.println("Musica não Encontrada" + "ou" + e.getMessage());
         }
     }
 
@@ -77,20 +77,19 @@ public class Arq {
 
     public static Musica getRegistro() {
         try {
-            if (raf.getFilePointer() < raf.length()) {
-                Musica buffer = new Musica();
-
+            Musica buffer = new Musica();
+            byte[] bytes;
+            do {
                 meta.readMetaData();
-                byte[] ba = new byte[meta.sizeBytes]; // Cria um array de bytes com o tamanho do registro
-                raf.readFully(ba); // Lê o registro completo
-                buffer = Musica.fromByteArray(ba); // Converte para objeto Musica
-                return buffer;
-            } else {
-                return null;
-            }
+                bytes = new byte[meta.sizeBytes]; // Cria um array de bytes com o tamanho do registro
+                raf.readFully(bytes); // Lê o registro completo
+            } while (meta.lapide && raf.getFilePointer() < raf.length());
 
+            buffer = Musica.fromByteArray(bytes);
+            return buffer;
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            
+            System.out.println("Arquivo chegou ao fim" + e.getMessage());
             return null;
         }
 
