@@ -1,5 +1,4 @@
 
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -20,6 +19,32 @@ public class Musica {
     String []genero; //vairos generos (2)
     float dance;
     String hash;
+
+    //getter
+    public int getId() {
+        return id;
+    }
+    public String getNome() {
+        return nome;
+    }
+    public String getArtista() {
+        return artista;
+    }
+    public int getPopularidade() {
+        return popular;
+    }
+    public String getDataLancamento() {
+        return timestampConv(date);
+    }
+    public String getGenero() {
+        return genero[0] + ", " + genero[1];
+    }
+    public float getDancabilidade() {
+        return dance;
+    }
+    public String getHash() {
+        return hash;
+    }
     
     public Musica() {
         this.nome = "Vazio";
@@ -109,15 +134,20 @@ public class Musica {
         "\nHash: " + hash;
     }
 
-    public static Musica criarObjeto(String str) {
+    
+
+    public static Musica StringToMusica(String str){
         String[] atributos = str.split(",");
 
-        Musica objeto = new Musica(atributos[0], atributos[1], Integer.parseInt(atributos[2]), atributos[3],
-        atributos[4], Float.parseFloat(atributos[5]), atributos[6]);
-        objeto.id = LastID + 1;
-        LastID++;
+        if(atributos.length ==7){//construir sem ID
+            return new Musica(atributos[0],atributos[1],Integer.parseInt(atributos[2]),atributos[3],atributos[4],Float.parseFloat(atributos[5]),atributos[6]);
+            
+        }else if(atributos.length == 8){ //construir com ID
+            return new Musica(Integer.parseInt(atributos[0]),atributos[1],atributos[2],Integer.parseInt(atributos[3]),Long.parseLong(atributos[4]),atributos[5],Float.parseFloat(atributos[6]),atributos[7]);
+        }
+        return null;
+        
 
-        return objeto;
     }
 
     public byte[] toByteArray() throws IOException {

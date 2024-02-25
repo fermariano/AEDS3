@@ -1,21 +1,19 @@
+
 //metodos de escrita e leitura aqui 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.RandomAccessFile;
 import java.io.IOException;
 
-
 public class Arq {
-    protected static boolean status = false; //se esta em operação
-    protected static String file; //nome do arquivo
+    protected static boolean status = false; // se esta em operação
+    protected static String file; // nome do arquivo
     protected static RandomAccessFile raf;
     protected static DataOutputStream dos;
     protected static DataInputStream dis;
     protected static MetaData meta;
 
-
-
-    public static void Iniciar(String filex){
+    public static void Iniciar(String filex) {
         file = filex;
         try {
             raf = new RandomAccessFile(file, "rw");
@@ -25,51 +23,123 @@ public class Arq {
         } catch (IOException e) {
             System.out.println("Erro ao abrir o arquivo: " + e.getMessage());
         }
-        
+
     }
 
+    public static boolean getStatus() {
+        return status;
+    }
 
-    public static void PrintarRegistros(){
+    public static void UpdateSong(int ID, String newSong) {
         try {
-            raf.seek(0); // Vai para o início do arquivo
-            Musica teste = new Musica(); // Cria o objeto que vai ser usado para ler os registros
-            int idReg = raf.readInt(); // Lê o último ID adicionado
-            System.out.println("Ultimo ID adicionado: " + idReg);
-            while (raf.getFilePointer() < raf.length()) { // Enquanto houver registros no arquivo
+            IniciarLeituraSequencial();
 
-                meta.readMetaData(); // Lê os metadados
-                byte[] ba = new byte[meta.sizeBytes]; // Cria um array de bytes com o tamanho do registro
-                raf.readFully(ba); // Lê o registro completo
-                teste = Musica.fromByteArray(ba); // Converte para objeto Musica
-                System.out.println(teste);
-                System.out.println(meta);
+            int idSeacher = -1;
+            long seekSaver = 0;
+            long metaSeek = 0;
+
+            for (; idSeacher != ID; raf.seek(raf.getFilePointer() + (meta.sizeBytes - 4))) { // pula os bytes de
+                                                                                             // registro ate achar o ID
+                metaSeek = raf.getFilePointer(); // salva a posição do inicio da lapide
+                meta.readMetaData();// -4 para não contar os bytes do ID
+                seekSaver = raf.getFilePointer(); // salva a posição do inicio do registro
+                idSeacher = raf.readInt();
             }
-            System.out.println("idRe =" + idReg);
             
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+            // achpu ID
+            raf.seek(seekSaver); // retorna a posição do inicio do registro
+            Musica nova = Musica.StringToMusica(newSong); // cria um novo objeto com a string de parametro
+            nova.id = ID; // seta o ID do novo objeto
+            int novaSize = nova.toByteArray().length;
+
+            if (novaSize <= meta.sizeBytes) { // pode sobrescrever
+                raf.seek(seekSaver);
+                raf.write(nova.toByteArray());
+                // volta para o inicio do registro (lapide)
+            } else {
+                raf.seek(metaSeek); // volta para o inicio do registro (lapide)
+                raf.writeBoolean(true); // marca como lapide
+                addRegistroExistenteEOF(nova);// update em fim de arquivo sem alterar ultimo ID
+            }
+
+        } catch (IOException e) { // raf buscou ID até não encontrar
+            System.out.println("Musica não Encontrada"+"ou" + e.getMessage());
         }
     }
 
+    public static void IniciarLeituraSequencial() {
+        try {
+            raf.seek(4);// pula o lastID
+        } catch (IOException e) {
+            System.out.println("Erro ao iniciar a leitura sequencial: " + e.getMessage());
+        }
+    }
+
+    public static Musica getRegistro() {
+        try {
+            if (raf.getFilePointer() < raf.length()) {
+                Musica buffer = new Musica();
+
+                meta.readMetaData();
+                byte[] ba = new byte[meta.sizeBytes]; // Cria um array de bytes com o tamanho do registro
+                raf.readFully(ba); // Lê o registro completo
+                buffer = Musica.fromByteArray(ba); // Converte para objeto Musica
+                return buffer;
+            } else {
+                return null;
+            }
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+
+    }
+
+    public Musica getSongFromRafNow() {
+        try {
+            Musica buffer = new Musica();
+            meta.readMetaData();
+            byte[] ba = new byte[meta.sizeBytes]; // Cria um array de bytes com o tamanho do registro
+            raf.readFully(ba); // Lê o registro completo
+            buffer = Musica.fromByteArray(ba); // Converte para objeto Musica
+            return buffer;
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
 
     public static boolean addRegistro(String str) {
         byte[] ba;
         try {
-            
-            ba = Musica.criarObjeto(str).toByteArray(); //atualiza lastID na classe mas não no arquivo
-            writeLastID(Musica.getLastID()); //atualiza no arquivo
+            ba = Musica.StringToMusica(str).toByteArray(); // atualiza lastID na classe mas não no arquivo
+            Musica.setLastID(Musica.getLastID() + 1); // atualiza na classe
+            writeLastID(Musica.getLastID()); // atualiza no arquivo
             raf.seek(raf.length());
-            meta.writeMetaData(ba);
+            meta.writeMetaData(ba.length);
             raf.write(ba);
             return true;
         } catch (IOException e) {
             System.out.println(e.getMessage());
             return false;
         }
+    }
 
-    } 
+    public static boolean addRegistroExistenteEOF(Musica newsong) {
+        try {
+            byte[] ba = newsong.toByteArray();
+            raf.seek(raf.length());
+            meta.writeMetaData(ba.length);
+            raf.write(ba);
+            return true;
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
 
-    public static int ReadLastID(){
+    public static int ReadLastID() {
         try {
             raf.seek(0);
             return raf.readInt();
@@ -77,10 +147,10 @@ public class Arq {
             System.out.println("Erro ao ler o último ID: " + e.getMessage());
             return -1;
         }
-    
+
     }
 
-    public static void writeLastID(int id){
+    public static void writeLastID(int id) {
         try {
             raf.seek(0);
             raf.writeInt(id);
@@ -89,10 +159,7 @@ public class Arq {
         }
     }
 
-
-
-
-    public static void Finalizar(){
+    public static void Finalizar() {
         status = false;
         try {
             raf.close();

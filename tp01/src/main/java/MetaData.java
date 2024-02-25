@@ -27,10 +27,10 @@ public class MetaData {
     }
 
 
-    void writeMetaData(byte[] sizebytes) {
+    void writeMetaData(int sizebytes) {
         try {
             raf.writeBoolean(false);
-            raf.writeInt(sizebytes.length);
+            raf.writeInt(sizebytes);
         } catch (IOException e) {
             System.out.println("Erro ao escrever os metadados: " + e.getMessage());
         }
