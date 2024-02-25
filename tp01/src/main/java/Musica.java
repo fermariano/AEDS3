@@ -79,15 +79,23 @@ public class Musica {
         this.hash = hash;
     }
 
-    public Musica(int id, String nome, String artista, int popular, long date, String genero, float dance, String hash) {
+    public Musica(int id, String nome, String artista, int popular, String date, String genero, float dance, String hash) {
         this.id = id;
         this.nome = nome;
         this.artista = artista;
         this.popular = popular;
-        this.date = date;
+        try {
+            this.date = dataConverter(date);
+        } catch (Exception e) {
+            System.out.println("Erro ao converter a data: " + e.getMessage());
+        }
         this.genero = genero.split(";");
         this.dance = dance;
         this.hash = hash;
+    }
+
+    public static void iniciar(){
+        setLastID(Arq.ReadLastID());
     }
 
     private static String[] iniciarGenero(){
@@ -130,7 +138,7 @@ public class Musica {
         "\nPopular: " + popular + 
         "\nDate: " + timestampConv(date) + 
         "\nDance: " + dance +
-        "\nGenero: " + genero[0] + ", " + genero[1] + 
+        "\nGenero: " + genero[0] + "; " + genero[1] + 
         "\nHash: " + hash;
     }
 
@@ -140,13 +148,14 @@ public class Musica {
         String[] atributos = str.split(",");
 
         if(atributos.length ==7){//construir sem ID
+            System.out.println("construiu sem ID");
             return new Musica(atributos[0],atributos[1],Integer.parseInt(atributos[2]),atributos[3],atributos[4],Float.parseFloat(atributos[5]),atributos[6]);
             
         }else if(atributos.length == 8){ //construir com ID
-            return new Musica(Integer.parseInt(atributos[0]),atributos[1],atributos[2],Integer.parseInt(atributos[3]),Long.parseLong(atributos[4]),atributos[5],Float.parseFloat(atributos[6]),atributos[7]);
+            System.out.println("construiu com ID");
+            return new Musica(Integer.parseInt(atributos[0]),atributos[1],atributos[2],Integer.parseInt(atributos[3]),atributos[4],atributos[5],Float.parseFloat(atributos[6]),atributos[7]);
         }
-        return null;
-        
+        throw new IllegalArgumentException("Erro ao criar a musica: atributos insuficientes ou demais.");
 
     }
 
@@ -170,22 +179,24 @@ public class Musica {
     }
 
     public static Musica fromByteArray(byte[] bytes) {
+    
         try {
+            Musica musica = new Musica();        
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
             DataInputStream dis = new DataInputStream(bais);
     
             // Leia os campos na ordem correta
-            int id = dis.readInt();
-            String nome = dis.readUTF();
-            String artista = dis.readUTF();
-            int popular = dis.readInt();
-            long date = dis.readLong();
-            String genero = dis.readUTF();
-            float dance = dis.readFloat();
-            String hash = dis.readUTF();
-    
+            musica.id = dis.readInt();
+            musica.nome = dis.readUTF();
+            musica.artista = dis.readUTF();
+            musica.popular = dis.readInt();
+            musica.date = dis.readLong();
+            musica.genero = dis.readUTF().split(";");
+            musica.dance = dis.readFloat();
+            musica.hash = dis.readUTF();
+            
             dis.close(); // Feche o DataInputStream
-            return new Musica(id, nome, artista, popular, date, genero, dance, hash);
+            return musica; // Retorne o objeto Musica            
         } catch (IOException e) {
             e.printStackTrace();
             return null; // Ou lançar uma exceção personalizada, dependendo do seu caso de uso

@@ -142,7 +142,7 @@ public class InterfaceMenu extends JFrame {
         listarButton.setForeground(Color.WHITE);
         listarButton.setBackground(buttonColor);
 
-        // Configurando a visibilidade da janela
+       
         setVisible(true);
 
         adicionarButton.addActionListener(new ActionListener() {
@@ -156,7 +156,6 @@ public class InterfaceMenu extends JFrame {
                 String dancabilidade = dancabilidadeTextField.getText();
                 String hash = hashTextField.getText();
 
-                // Aqui você pode reunir todas essas informações em uma única string
                 String informacoes = nome + "," +
                         artista + "," +
                         popularidade + "," +
@@ -164,19 +163,19 @@ public class InterfaceMenu extends JFrame {
                         genero + "," +
                         dancabilidade + "," +
                         hash;
-
-                // Exibir a string com as informações reunidas
                 System.out.println("Informações reunidas:\n" + informacoes + "\n\n");
 
                 Arq.addRegistro(informacoes);
+                limparCampos();
+                listarButton.doClick();
+                
             }
         });
 
         atualizarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Get the data from text fields
-                String id = idTextField.getText(); // Obtenha o ID do campo de texto
+                String id = idTextField.getText(); 
                 String nome = nomeTextField.getText();
                 String artista = artistaTextField.getText();
                 String popularidade = popularidadeTextField.getText();
@@ -185,7 +184,7 @@ public class InterfaceMenu extends JFrame {
                 String dancabilidade = dancabilidadeTextField.getText();
                 String hash = hashTextField.getText();
 
-                // Combine the data into a single string
+                
                 String informacoes = id+","+ nome + "," +
                         artista + "," +
                         popularidade + "," +
@@ -193,10 +192,10 @@ public class InterfaceMenu extends JFrame {
                         genero + "," +
                         dancabilidade + "," +
                         hash;
-
+                System.out.println("Informações reunidas:\n" + informacoes + "\n\n");
                 Arq.UpdateSong(Integer.parseInt(id), informacoes);
 
-                // Limpe os campos de texto após a atualização
+               
                 limparCampos();
             }
         });
@@ -206,16 +205,32 @@ public class InterfaceMenu extends JFrame {
         pesquisarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Adicionar função aqui
-                System.out.println("Botão 'Pesquisar' clicado!");
+                int ID = Integer.parseInt(idTextField.getText());
+                Musica musica = Arq.FindSongID(ID);
+                LimparTabela();
+                if (musica != null) {
+                    tableModel.addRow(new Object[] {
+                        musica.getId(),
+                        musica.getNome(),
+                        musica.getArtista(),
+                        musica.getPopularidade(),
+                        musica.getDataLancamento(),
+                        musica.getGenero(),
+                        musica.getDancabilidade(),
+                        musica.getHash()
+                });
+                } else {
+                    System.out.println("Música não encontrada!");
+                }
             }
         });
 
         deletarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Adicionar função aqui
-                System.out.println("Botão 'Deletar' clicado!");
+                int ID = Integer.parseInt(idTextField.getText());
+                System.out.println("Status de deletar: " + Arq.DeleteSong(ID));
+                limparCampos();
             }
         });
 
@@ -280,6 +295,10 @@ public class InterfaceMenu extends JFrame {
         hashTextField.setText("");
     }
 
+    private void LimparTabela() {
+        tableModel.setRowCount(0);
+    }
+
     public boolean Fechar() {
         try {
             this.dispose();
@@ -293,10 +312,14 @@ public class InterfaceMenu extends JFrame {
     }
 
     public static void main(String args[]) {
+        Arq.Iniciar("songs.db");
+        Musica.iniciar();
+        
+        System.out.println("Iniciando a interface gráfica...");
+        System.out.println("ultimo ID inserido:" + Musica.getLastID());
 
         SwingUtilities.invokeLater(InterfaceMenu::new);
-        Arq.Iniciar("songs.db");
-
+        
         while (Running) {
 
         }
