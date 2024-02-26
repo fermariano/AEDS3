@@ -1,3 +1,5 @@
+package Main;
+
 import java.io.*;
 import java.io.RandomAccessFile;
 public class MetaData {
@@ -5,15 +7,12 @@ public class MetaData {
     int sizeBytes;
     RandomAccessFile raf;
 
-    MetaData() {
-        this.lapide = false;
-        this.sizeBytes = 0;
-    }
-
     MetaData(RandomAccessFile raf) {
         this.lapide = false;
         this.sizeBytes = 0;
         this.raf = raf;
+        Logs.Succeed("Compartilhamento de arquivo com metadados estabelecido!");
+        Logs.Succeed("Metadados criados com sucesso!");
 
     }
 
@@ -22,7 +21,7 @@ public class MetaData {
             this.lapide = raf.readBoolean(); // Lê a lapide
             this.sizeBytes = raf.readInt(); // Lê o tamanho do registro da música
         } catch (IOException e) {
-            System.out.println("Erro ao ler os metadados: " + e.getMessage());
+            Logs.Alert("Erro ao ler os metadados: " + e.getMessage());
         }
     }
 
@@ -32,7 +31,7 @@ public class MetaData {
             raf.writeBoolean(false);
             raf.writeInt(sizebytes);
         } catch (IOException e) {
-            System.out.println("Erro ao escrever os metadados: " + e.getMessage());
+            Logs.Alert("Erro ao escrever os metadados: " + e.getMessage());
         }
     }
 

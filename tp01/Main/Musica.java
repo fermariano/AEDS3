@@ -1,3 +1,4 @@
+package Main;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -87,7 +88,7 @@ public class Musica {
         try {
             this.date = dataConverter(date);
         } catch (Exception e) {
-            System.out.println("Erro ao converter a data: " + e.getMessage());
+            Logs.Alert("Erro ao converter a data: " + e.getMessage());
         }
         this.genero = genero.split(";");
         this.dance = dance;
@@ -146,13 +147,14 @@ public class Musica {
 
     public static Musica StringToMusica(String str){
         String[] atributos = str.split(",");
+        
 
         if(atributos.length ==7){//construir sem ID
-            System.out.println("construiu sem ID");
+            Logs.Details("Musica construída sem ID");
             return new Musica(atributos[0],atributos[1],Integer.parseInt(atributos[2]),atributos[3],atributos[4],Float.parseFloat(atributos[5]),atributos[6]);
             
         }else if(atributos.length == 8){ //construir com ID
-            System.out.println("construiu com ID");
+            Logs.Details("Musica construída com ID");
             return new Musica(Integer.parseInt(atributos[0]),atributos[1],atributos[2],Integer.parseInt(atributos[3]),atributos[4],atributos[5],Float.parseFloat(atributos[6]),atributos[7]);
         }
         throw new IllegalArgumentException("Erro ao criar a musica: atributos insuficientes ou demais.");
@@ -162,17 +164,19 @@ public class Musica {
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-
+        if(this.genero.length != 2){
+            throw new IllegalArgumentException("Erro ao criar o array de bytes: genero insuficiente ou demais.");
+        }
         // Escreva os campos na ordem correta
-        dos.writeInt(id);
-        dos.writeUTF(nome);
-        dos.writeUTF(artista);
-        dos.writeInt(popular);
-        dos.writeLong(date);
+        dos.writeInt(this.id);
+        dos.writeUTF(this.nome);
+        dos.writeUTF(this.artista);
+        dos.writeInt(this.popular);
+        dos.writeLong(this.date);
         String newgenero = genero[0] + ";" + genero[1];
         dos.writeUTF(newgenero);
-        dos.writeFloat(dance);
-        dos.writeUTF(hash);
+        dos.writeFloat(this.dance);
+        dos.writeUTF(this.hash);
 
         dos.close(); // Feche o DataOutputStream
         return baos.toByteArray(); // Retorne o array de bytes

@@ -1,3 +1,4 @@
+package Main;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -163,7 +164,7 @@ public class InterfaceMenu extends JFrame {
                         genero + "," +
                         dancabilidade + "," +
                         hash;
-                System.out.println("Informações reunidas:\n" + informacoes + "\n\n");
+                Logs.Details("Informações reunidas:\n" + informacoes + "\n\n");
 
                 Arq.addRegistro(informacoes);
                 limparCampos();
@@ -192,7 +193,7 @@ public class InterfaceMenu extends JFrame {
                         genero + "," +
                         dancabilidade + "," +
                         hash;
-                System.out.println("Informações reunidas:\n" + informacoes + "\n\n");
+                Logs.Details("Informações reunidas:\n" + informacoes + "\n\n");
                 Arq.UpdateSong(Integer.parseInt(id), informacoes);
 
                
@@ -220,7 +221,7 @@ public class InterfaceMenu extends JFrame {
                         musica.getHash()
                 });
                 } else {
-                    System.out.println("Música não encontrada!");
+                    Logs.Alert("Música não encontrada!");
                 }
             }
         });
@@ -229,7 +230,7 @@ public class InterfaceMenu extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int ID = Integer.parseInt(idTextField.getText());
-                System.out.println("Status de deletar: " + Arq.DeleteSong(ID));
+                Logs.Details("Status de deletar: " + Arq.DeleteSong(ID));
                 limparCampos();
             }
         });
@@ -303,10 +304,10 @@ public class InterfaceMenu extends JFrame {
         try {
             this.dispose();
             Running = false;
-            System.out.println("Janela fechada com sucesso!");
+            Logs.Succeed("Janela fechada com sucesso!");
             return true;
         } catch (Exception e) {
-            System.out.println("Erro ao fechar a janela: " + e.getMessage());
+            Logs.Alert("Erro ao fechar a janela:\n Erro:" + e.getMessage());
             return false;
         }
     }
@@ -315,8 +316,8 @@ public class InterfaceMenu extends JFrame {
         Arq.Iniciar("songs.db");
         Musica.iniciar();
         
-        System.out.println("Iniciando a interface gráfica...");
-        System.out.println("ultimo ID inserido:" + Musica.getLastID());
+        Logs.Details("Iniciando a interface gráfica...");
+        Logs.Details("ultimo ID inserido:" + Musica.getLastID());
 
         SwingUtilities.invokeLater(InterfaceMenu::new);
         
