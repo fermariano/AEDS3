@@ -345,6 +345,6 @@ public class InterfaceMenu extends JFrame {
 
         }
 
-        Arq.Finalizar();
+    
     }
 }
