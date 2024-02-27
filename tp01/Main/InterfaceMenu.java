@@ -1,4 +1,4 @@
-package Main;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -21,6 +21,7 @@ public class InterfaceMenu extends JFrame {
     private JButton pesquisarButton = new JButton("Pesquisar");
     private JButton deletarButton = new JButton("Deletar");
     private JButton listarButton = new JButton("Listar Registros");
+    private JButton MockDataButton = new JButton("Mock Data");
     private DefaultTableModel tableModel;
     private JTable table;
 
@@ -97,7 +98,7 @@ public class InterfaceMenu extends JFrame {
         buttonsPanel.add(pesquisarButton);
         buttonsPanel.add(deletarButton);
         buttonsPanel.add(listarButton);
-
+        buttonsPanel.add(MockDataButton);
         // Adicionando o painel de botões ao painel principal no sul
         mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
 
@@ -143,13 +144,18 @@ public class InterfaceMenu extends JFrame {
         listarButton.setForeground(Color.WHITE);
         listarButton.setBackground(buttonColor);
 
+        MockDataButton.setFont(buttonFont);
+        MockDataButton.setForeground(Color.WHITE);
+        MockDataButton.setBackground(buttonColor);
+
        
         setVisible(true);
 
         adicionarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nome = nomeTextField.getText();
+                try{
+                     String nome = nomeTextField.getText();
                 String artista = artistaTextField.getText();
                 String popularidade = popularidadeTextField.getText();
                 String dataLancamento = dataLancamentoTextField.getText();
@@ -169,6 +175,12 @@ public class InterfaceMenu extends JFrame {
                 Arq.addRegistro(informacoes);
                 limparCampos();
                 listarButton.doClick();
+                }catch(IllegalArgumentException ex){
+                    Logs.Alert("Erro ao adicionar a música:\n" + ex.getMessage());
+                }catch (Exception ex){
+                    Logs.Alert("Erro ao adicionar a música:\n" + ex.getMessage());
+                }
+               
                 
             }
         });
@@ -298,6 +310,25 @@ public class InterfaceMenu extends JFrame {
                             musica.getHash()
                     });
                 }
+            }
+        });
+
+        MockDataButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MockData Mock = new MockData();
+                Musica musica = Mock.generateRandomData();
+                Logs.Details("Mock Data gerado:\n" + musica.toString());
+                //adicionar aos campos 
+                nomeTextField.setText(musica.getNome());
+                artistaTextField.setText(musica.getArtista());
+                popularidadeTextField.setText(String.valueOf(musica.getPopularidade()));
+                dataLancamentoTextField.setText(musica.getDataLancamento());
+                generoTextField.setText(musica.getGenero());
+                dancabilidadeTextField.setText(String.valueOf(musica.getDancabilidade()));
+                hashTextField.setText(musica.getHash());
+            
+                listarButton.doClick();
             }
         });
 

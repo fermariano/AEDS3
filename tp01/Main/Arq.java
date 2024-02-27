@@ -1,4 +1,4 @@
-package Main;
+
 //metodos de escrita e leitura aqui 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
