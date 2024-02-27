@@ -25,6 +25,10 @@ public class Logs {
         String msg = "\n" + Message;
         System.out.println(BLUE + msg + RESET);
     }
+    public static void DetailsNoLn(String Message) {
+        
+        System.out.print(BLUE + Message + RESET);
+    }
     public static void KindaAlert(String Message) {
         String msg = "\n" + Message;
         System.out.println(YELLOW + msg + RESET);

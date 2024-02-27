@@ -148,47 +148,45 @@ public class InterfaceMenu extends JFrame {
         MockDataButton.setForeground(Color.WHITE);
         MockDataButton.setBackground(buttonColor);
 
-       
         setVisible(true);
 
         adicionarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try{
-                     String nome = nomeTextField.getText();
-                String artista = artistaTextField.getText();
-                String popularidade = popularidadeTextField.getText();
-                String dataLancamento = dataLancamentoTextField.getText();
-                String genero = generoTextField.getText();
-                String dancabilidade = dancabilidadeTextField.getText();
-                String hash = hashTextField.getText();
+                try {
+                    String nome = nomeTextField.getText();
+                    String artista = artistaTextField.getText();
+                    String popularidade = popularidadeTextField.getText();
+                    String dataLancamento = dataLancamentoTextField.getText();
+                    String genero = generoTextField.getText();
+                    String dancabilidade = dancabilidadeTextField.getText();
+                    String hash = hashTextField.getText();
 
-                String informacoes = nome + "," +
-                        artista + "," +
-                        popularidade + "," +
-                        dataLancamento + "," +
-                        genero + "," +
-                        dancabilidade + "," +
-                        hash;
-                Logs.Details("Informações reunidas:\n" + informacoes + "\n\n");
+                    String informacoes = nome + "," +
+                            artista + "," +
+                            popularidade + "," +
+                            dataLancamento + "," +
+                            genero + "," +
+                            dancabilidade + "," +
+                            hash;
+                    Logs.Details("Informações reunidas:\n" + informacoes + "\n\n");
 
-                Arq.addRegistro(informacoes);
-                limparCampos();
-                listarButton.doClick();
-                }catch(IllegalArgumentException ex){
+                    Arq.addRegistro(informacoes);
+                    limparCampos();
+                    listarButton.doClick();
+                } catch (IllegalArgumentException ex) {
                     Logs.Alert("Erro ao adicionar a música:\n" + ex.getMessage());
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     Logs.Alert("Erro ao adicionar a música:\n" + ex.getMessage());
                 }
-               
-                
+
             }
         });
 
         atualizarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String id = idTextField.getText(); 
+                String id = idTextField.getText();
                 String nome = nomeTextField.getText();
                 String artista = artistaTextField.getText();
                 String popularidade = popularidadeTextField.getText();
@@ -197,8 +195,7 @@ public class InterfaceMenu extends JFrame {
                 String dancabilidade = dancabilidadeTextField.getText();
                 String hash = hashTextField.getText();
 
-                
-                String informacoes = id+","+ nome + "," +
+                String informacoes = id + "," + nome + "," +
                         artista + "," +
                         popularidade + "," +
                         dataLancamento + "," +
@@ -208,12 +205,10 @@ public class InterfaceMenu extends JFrame {
                 Logs.Details("Informações reunidas:\n" + informacoes + "\n\n");
                 try {
                     Arq.UpdateSong(Integer.parseInt(id), informacoes);
-                }catch (NumberFormatException ex){
+                } catch (NumberFormatException ex) {
                     Logs.Alert("Erro ao atualizar a música:\n Numero esperado " + ex.getMessage());
                 }
-                
 
-               
                 limparCampos();
             }
         });
@@ -224,27 +219,27 @@ public class InterfaceMenu extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                   int ID = Integer.parseInt(idTextField.getText());
-                Musica musica = Arq.FindSongID(ID);
-                LimparTabela();
-                if (musica != null) {
-                    tableModel.addRow(new Object[] {
-                        musica.getId(),
-                        musica.getNome(),
-                        musica.getArtista(),
-                        musica.getPopularidade(),
-                        musica.getDataLancamento(),
-                        musica.getGenero(),
-                        musica.getDancabilidade(),
-                        musica.getHash()
-                });
-                Logs.Details(musica.toString());
-                } else {
-                    Logs.Alert("Música não encontrada!");
-                } 
-                }catch (NumberFormatException ex){
+                    int ID = Integer.parseInt(idTextField.getText());
+                    Musica musica = Arq.FindSongID(ID);
+                    LimparTabela();
+                    if (musica != null) {
+                        tableModel.addRow(new Object[] {
+                                musica.getId(),
+                                musica.getNome(),
+                                musica.getArtista(),
+                                musica.getPopularidade(),
+                                musica.getDataLancamento(),
+                                musica.getGenero(),
+                                musica.getDancabilidade(),
+                                musica.getHash()
+                        });
+                        Logs.Details(musica.toString());
+                    } else {
+                        Logs.Alert("Música não encontrada!");
+                    }
+                } catch (NumberFormatException ex) {
                     Logs.Alert("Erro ao pesquisar a música:\n Numero esperado " + ex.getMessage());
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     Logs.Alert("Erro ao pesquisar a música:\n" + ex.getMessage());
                 }
                 limparCampos();
@@ -254,13 +249,13 @@ public class InterfaceMenu extends JFrame {
         deletarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try{
+                try {
                     int ID = Integer.parseInt(idTextField.getText());
-                Logs.Details("Status de deletar: " + Arq.DeleteSong(ID));
-                }catch (NumberFormatException ex){
-                    Logs.Alert("Erro ao deletar a música:\n Numero esperado " + ex.getMessage() +"\n" + ex.getClass());
-                }catch (Exception ex){
-                    Logs.Alert("Erro ao deletar a música:\n" + ex.getMessage()+"\n" + ex.getClass());
+                    Logs.Details("Status de deletar: " + Arq.DeleteSong(ID));
+                } catch (NumberFormatException ex) {
+                    Logs.Alert("Erro ao deletar a música:\n Numero esperado " + ex.getMessage() + "\n" + ex.getClass());
+                } catch (Exception ex) {
+                    Logs.Alert("Erro ao deletar a música:\n" + ex.getMessage() + "\n" + ex.getClass());
                 }
                 limparCampos();
             }
@@ -278,7 +273,6 @@ public class InterfaceMenu extends JFrame {
         tableModel.addColumn("Hash");
         table = new JTable(tableModel);
 
-       
         // Adiciona um JScrollPane para a tabela
         gbc.gridy = 12;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -319,7 +313,7 @@ public class InterfaceMenu extends JFrame {
                 MockData Mock = new MockData();
                 Musica musica = Mock.generateRandomData();
                 Logs.Details("Mock Data gerado:\n" + musica.toString());
-                //adicionar aos campos 
+                // adicionar aos campos
                 nomeTextField.setText(musica.getNome());
                 artistaTextField.setText(musica.getArtista());
                 popularidadeTextField.setText(String.valueOf(musica.getPopularidade()));
@@ -327,7 +321,7 @@ public class InterfaceMenu extends JFrame {
                 generoTextField.setText(musica.getGenero());
                 dancabilidadeTextField.setText(String.valueOf(musica.getDancabilidade()));
                 hashTextField.setText(musica.getHash());
-            
+
                 listarButton.doClick();
             }
         });
@@ -350,6 +344,39 @@ public class InterfaceMenu extends JFrame {
         tableModel.setRowCount(0);
     }
 
+    public static void Iniciar() {
+        char[] operationSymbols = { '-', '\\', '|', '/' };
+        int symbolIndex = 0;
+        try {
+            int percent = 0;
+            while (percent <= 100) {
+                // Limpar a tela do console
+                System.out.print("\r");
+
+                // Exibir a porcentagem atual e o símbolo de operação
+                Logs.DetailsNoLn("=================== Iniciando o programa =================== [" + percent + "%] "
+                        + operationSymbols[symbolIndex]);
+
+                // Alternar para o próximo símbolo de operação
+                symbolIndex = (symbolIndex + 1) % operationSymbols.length;
+
+                // Aguardar um curto período de tempo para criar a animação
+                Thread.sleep(40);
+
+                // Incrementar a porcentagem
+                percent++;
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        SwingUtilities.invokeLater(InterfaceMenu::new);
+        Logs.Succeed("Interface gráfica iniciada com sucesso e Operando!");
+        while (Running) {
+        }
+
+    }
+
     public boolean Fechar() {
         try {
             this.dispose();
@@ -365,17 +392,10 @@ public class InterfaceMenu extends JFrame {
     public static void main(String args[]) {
         Arq.Iniciar("songs.db");
         Musica.iniciar();
+        Iniciar();
         Logs.Clear();
-        Logs.Details("=================== Iniciando o programa ===================");
-        Logs.Details("Iniciando a interface gráfica...");
-        
 
-        SwingUtilities.invokeLater(InterfaceMenu::new);
-        Logs.Succeed("Interface gráfica iniciada com sucesso e Operando!");
-        while (Running) {
+        // Array de símbolos de operação para animação
 
-        }
-
-    
     }
 }
