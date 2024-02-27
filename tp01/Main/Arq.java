@@ -8,15 +8,7 @@ import java.io.IOException;
 
 public class Arq {
 
-    public static String getPath(String file){
-        
-        File f = new File(file);
-        String PackPath = f.getParent();
-        String KnownPath ="Source/DataBase/" + file;
-        String Path = PackPath + "/" + KnownPath;
-        Logs.Details("Acessando Data Base: " + Path);        
-        return Path;
-    }
+    
 
     private static class DataFinder {
         long seekSaver;
@@ -70,7 +62,7 @@ public class Arq {
 
     // inicia o arquivo/cria o raf para gerenciar
     public static void Iniciar(String filex) {
-        Arq.file = getPath(filex);
+        Arq.file = "Source/DataBase/songs.db";
         try {
             Arq.raf = new RandomAccessFile(file, "rw"); // cria pra escrita/leitura
             Arq.status = true;
@@ -139,7 +131,11 @@ public class Arq {
                 }
                 Logs.Succeed("Musica atualizada com sucesso!");
             } catch (IOException e) {
-                Logs.Alert("Erro ao atualizar a música: " + e.getMessage());
+                Logs.Alert("Erro no update : " + e.getMessage());
+            }catch (IllegalArgumentException e) {
+                Logs.Alert("Erro no Update :\n Illegal Argument Exception" + e.getMessage());
+            }catch( NullPointerException e){
+                Logs.Alert("Erro no Update :\n Null Pointer Exception" + e.getMessage());
             }
 
         } else {

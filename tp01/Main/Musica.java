@@ -68,12 +68,7 @@ public class Musica {
         try {
             this.date = dataConverter(date);
         } catch (Exception e) {
-            try{
-                this.date = dataConverter(date+"-11-22"); //<3
-            }catch(Exception e2){ //desisto
-                this.date = dataConverter(date+"-22");
-            }
-            
+            Logs.Alert("Erro ao converter a data: " + e.getMessage());
         }
         this.genero = genero.split(";");
         this.dance = dance;
@@ -155,7 +150,14 @@ public class Musica {
             
         }else if(atributos.length == 8){ //construir com ID
             Logs.Details("Musica construída com ID");
-            return new Musica(Integer.parseInt(atributos[0]),atributos[1],atributos[2],Integer.parseInt(atributos[3]),atributos[4],atributos[5],Float.parseFloat(atributos[6]),atributos[7]);
+            try{
+               return new Musica(Integer.parseInt(atributos[0]),atributos[1],atributos[2],Integer.parseInt(atributos[3]),atributos[4],atributos[5],Float.parseFloat(atributos[6]),atributos[7]); 
+            }catch(NumberFormatException e){
+                if(e instanceof NumberFormatException)
+                    Logs.Alert("Erro na formação do Objeto\n Numero Esperado\n"+e.getMessage());
+                    return null;
+            }
+            
         }
         throw new IllegalArgumentException("Erro ao criar a musica: atributos insuficientes ou demais.");
 

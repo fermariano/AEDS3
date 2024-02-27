@@ -25,5 +25,13 @@ public class Logs {
         String msg = "\n" + Message;
         System.out.println(BLUE + msg + RESET);
     }
+    public static void KindaAlert(String Message) {
+        String msg = "\n" + Message;
+        System.out.println(YELLOW + msg + RESET);
+    }
+    public static void Clear(){
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
 
 }

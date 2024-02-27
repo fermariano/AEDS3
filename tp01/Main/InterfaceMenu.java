@@ -194,7 +194,12 @@ public class InterfaceMenu extends JFrame {
                         dancabilidade + "," +
                         hash;
                 Logs.Details("Informações reunidas:\n" + informacoes + "\n\n");
-                Arq.UpdateSong(Integer.parseInt(id), informacoes);
+                try {
+                    Arq.UpdateSong(Integer.parseInt(id), informacoes);
+                }catch (NumberFormatException ex){
+                    Logs.Alert("Erro ao atualizar a música:\n Numero esperado " + ex.getMessage());
+                }
+                
 
                
                 limparCampos();
@@ -206,7 +211,8 @@ public class InterfaceMenu extends JFrame {
         pesquisarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int ID = Integer.parseInt(idTextField.getText());
+                try {
+                   int ID = Integer.parseInt(idTextField.getText());
                 Musica musica = Arq.FindSongID(ID);
                 LimparTabela();
                 if (musica != null) {
@@ -220,17 +226,30 @@ public class InterfaceMenu extends JFrame {
                         musica.getDancabilidade(),
                         musica.getHash()
                 });
+                Logs.Details(musica.toString());
                 } else {
                     Logs.Alert("Música não encontrada!");
+                } 
+                }catch (NumberFormatException ex){
+                    Logs.Alert("Erro ao pesquisar a música:\n Numero esperado " + ex.getMessage());
+                }catch (Exception ex){
+                    Logs.Alert("Erro ao pesquisar a música:\n" + ex.getMessage());
                 }
+                limparCampos();
             }
         });
 
         deletarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int ID = Integer.parseInt(idTextField.getText());
+                try{
+                    int ID = Integer.parseInt(idTextField.getText());
                 Logs.Details("Status de deletar: " + Arq.DeleteSong(ID));
+                }catch (NumberFormatException ex){
+                    Logs.Alert("Erro ao deletar a música:\n Numero esperado " + ex.getMessage() +"\n" + ex.getClass());
+                }catch (Exception ex){
+                    Logs.Alert("Erro ao deletar a música:\n" + ex.getMessage()+"\n" + ex.getClass());
+                }
                 limparCampos();
             }
         });
@@ -315,12 +334,13 @@ public class InterfaceMenu extends JFrame {
     public static void main(String args[]) {
         Arq.Iniciar("songs.db");
         Musica.iniciar();
-        
+        Logs.Clear();
+        Logs.Details("=================== Iniciando o programa ===================");
         Logs.Details("Iniciando a interface gráfica...");
-        Logs.Details("ultimo ID inserido:" + Musica.getLastID());
+        
 
         SwingUtilities.invokeLater(InterfaceMenu::new);
-        
+        Logs.Succeed("Interface gráfica iniciada com sucesso e Operando!");
         while (Running) {
 
         }
