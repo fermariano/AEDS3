@@ -11,6 +11,7 @@ public class Logs {
     private static final String CYAN = "\u001B[36m";
     private static final String WHITE = "\u001B[37m";
 
+
     public static void Alert(String Message) {
         String msg = "\n" + Message;
         System.out.println(RED + msg + RESET);
@@ -37,5 +38,6 @@ public class Logs {
         System.out.print("\033[H\033[2J");
         System.out.flush();
     }
+
 
 }

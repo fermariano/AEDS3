@@ -20,7 +20,7 @@ public class MetaData {
         try {
             this.lapide = raf.readBoolean(); // Lê a lapide
             this.sizeBytes = raf.readInt(); // Lê o tamanho do registro da música
-        } catch (IOException e) { //se for end of file
+        } catch (Exception e) { //se for end of file
             if(e instanceof java.io.EOFException)
                 Logs.KindaAlert("MetaDados estão em EOF!");
             else

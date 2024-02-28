@@ -8,8 +8,6 @@ import java.io.IOException;
 
 public class Arq {
 
-    
-
     private static class DataFinder {
         long seekSaver;
         long metaSeek;
@@ -31,7 +29,6 @@ public class Arq {
                     // achar
                     // o
                     // registro
-
                     this.metaSeek = raf.getFilePointer(); // salva a posição do inicio da lapide
                     Arq.meta.readMetaData(); // le os metadados
                     this.metaData = Arq.meta; // salva os metadados na classe
@@ -132,9 +129,9 @@ public class Arq {
                 Logs.Succeed("Musica atualizada com sucesso!");
             } catch (IOException e) {
                 Logs.Alert("Erro no update : " + e.getMessage());
-            }catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 Logs.Alert("Erro no Update :\n Illegal Argument Exception" + e.getMessage());
-            }catch( NullPointerException e){
+            } catch (NullPointerException e) {
                 Logs.Alert("Erro no Update :\n Null Pointer Exception" + e.getMessage());
             }
 
@@ -155,14 +152,16 @@ public class Arq {
 
     // le o registro
     public static Musica getRegistro() {
+        Musica buffer = new Musica();
         try {
-            Musica buffer = new Musica();
+
             byte[] bytes;
             do {
                 Arq.meta.readMetaData();
                 bytes = new byte[Arq.meta.sizeBytes]; // Cria um array de bytes com o tamanho do registro
                 raf.readFully(bytes); // Lê o registro completo
-            } while (Arq.meta.lapide && raf.getFilePointer() < raf.length()); // so retorna reg valido
+            } while (Arq.meta.lapide); // so retorna reg valido
+
             buffer = Musica.fromByteArray(bytes);
             return buffer;
         } catch (IOException e) {
@@ -171,6 +170,11 @@ public class Arq {
                 return null;
             }
             Logs.Alert("Erro em Leitura de Registro \nException :" + e.getMessage());
+            return null;
+        } catch (IllegalArgumentException e) {
+            Logs.Alert("Erro na Conversão do Registro : " + e.getMessage());
+            Logs.KindaAlert("Registro Lido: " + buffer.toString());
+            Logs.KindaAlert("Lapide: " + Arq.meta.lapide + " Tamanho: " + Arq.meta.sizeBytes);
             return null;
         }
 
@@ -194,7 +198,7 @@ public class Arq {
         } catch (IOException e) {
             Logs.Alert(" Erro em Adicionar Registro addRegistro()\n error = " + e.getMessage());
             return false;
-        }catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             Logs.Alert("Erro na Conversão da String : " + e.getMessage());
             return false;
         }

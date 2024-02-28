@@ -1,5 +1,6 @@
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
@@ -29,15 +30,16 @@ public class InterfaceMenu extends JFrame {
         setTitle("CRUD Swing");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
 
         JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         setContentPane(mainPanel);
 
         // Painel para campos de entrada
         JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        fieldsPanel.setBorder(BorderFactory.createTitledBorder("Campos de Entrada"));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(10, 10, 10, 10);
         gbc.anchor = GridBagConstraints.WEST;
 
         gbc.gridx = 0;
@@ -92,7 +94,9 @@ public class InterfaceMenu extends JFrame {
         mainPanel.add(fieldsPanel, BorderLayout.NORTH);
 
         // Adicionando botões em um painel separado
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+        buttonsPanel.setBackground(Color.WHITE);
         buttonsPanel.add(adicionarButton);
         buttonsPanel.add(atualizarButton);
         buttonsPanel.add(pesquisarButton);
@@ -101,24 +105,6 @@ public class InterfaceMenu extends JFrame {
         buttonsPanel.add(MockDataButton);
         // Adicionando o painel de botões ao painel principal no sul
         mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
-
-        // Configuração da tabela
-        tableModel = new DefaultTableModel();
-        tableModel.addColumn("ID");
-        tableModel.addColumn("Nome");
-        tableModel.addColumn("Artista");
-        tableModel.addColumn("Popularidade");
-        tableModel.addColumn("Data de Lançamento");
-        tableModel.addColumn("Gênero");
-        tableModel.addColumn("Dançabilidade");
-        tableModel.addColumn("Hash");
-        table = new JTable(tableModel);
-
-        // Adiciona um JScrollPane para a tabela
-        JScrollPane scrollPane = new JScrollPane(table);
-
-        // Adicionando o JScrollPane ao painel principal no centro
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Configuração de cores e fontes para os botões
         Font buttonFont = new Font("Arial", Font.BOLD, 12);
@@ -148,7 +134,31 @@ public class InterfaceMenu extends JFrame {
         MockDataButton.setForeground(Color.WHITE);
         MockDataButton.setBackground(buttonColor);
 
+        // Configuração da tabela
+        tableModel = new DefaultTableModel();
+        tableModel.addColumn("ID");
+        tableModel.addColumn("Nome");
+        tableModel.addColumn("Artista");
+        tableModel.addColumn("Popularidade");
+        tableModel.addColumn("Data de Lançamento");
+        tableModel.addColumn("Gênero");
+        tableModel.addColumn("Dançabilidade");
+        tableModel.addColumn("Hash");
+        table = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Registros"));
+        scrollPane.setPreferredSize(new Dimension(700, 300));
+
+        // Adicionando o JScrollPane ao painel principal no centro
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Centralizando o JFrame na tela
+        setLocationRelativeTo(null);
+
+        // Atualiza a exibição da interface gráfica
         setVisible(true);
+
+        // Pare de editar aqui, para baixo tem metodos de ação dos botões
 
         adicionarButton.addActionListener(new ActionListener() {
             @Override
@@ -205,11 +215,12 @@ public class InterfaceMenu extends JFrame {
                 Logs.Details("Informações reunidas:\n" + informacoes + "\n\n");
                 try {
                     Arq.UpdateSong(Integer.parseInt(id), informacoes);
+                    limparCampos();
                 } catch (NumberFormatException ex) {
                     Logs.Alert("Erro ao atualizar a música:\n Numero esperado " + ex.getMessage());
                 }
 
-                limparCampos();
+                
             }
         });
 
@@ -237,12 +248,13 @@ public class InterfaceMenu extends JFrame {
                     } else {
                         Logs.Alert("Música não encontrada!");
                     }
+                    limparCampos();
                 } catch (NumberFormatException ex) {
                     Logs.Alert("Erro ao pesquisar a música:\n Numero esperado " + ex.getMessage());
                 } catch (Exception ex) {
                     Logs.Alert("Erro ao pesquisar a música:\n" + ex.getMessage());
                 }
-                limparCampos();
+               
             }
         });
 
@@ -252,35 +264,16 @@ public class InterfaceMenu extends JFrame {
                 try {
                     int ID = Integer.parseInt(idTextField.getText());
                     Logs.Details("Status de deletar: " + Arq.DeleteSong(ID));
+                    limparCampos();
                 } catch (NumberFormatException ex) {
                     Logs.Alert("Erro ao deletar a música:\n Numero esperado " + ex.getMessage() + "\n" + ex.getClass());
                 } catch (Exception ex) {
                     Logs.Alert("Erro ao deletar a música:\n" + ex.getMessage() + "\n" + ex.getClass());
                 }
-                limparCampos();
+                
+                listarButton.doClick();
             }
         });
-
-        // Configuração da tabela
-        tableModel = new DefaultTableModel();
-        tableModel.addColumn("ID");
-        tableModel.addColumn("Nome");
-        tableModel.addColumn("Artista");
-        tableModel.addColumn("Popularidade");
-        tableModel.addColumn("Data de Lançamento");
-        tableModel.addColumn("Gênero");
-        tableModel.addColumn("Dançabilidade");
-        tableModel.addColumn("Hash");
-        table = new JTable(tableModel);
-
-        // Adiciona um JScrollPane para a tabela
-        gbc.gridy = 12;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1.0; // Aumenta o peso na direção X
-        gbc.weighty = 1.0; // Aumenta o peso na direção Y
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(10, 10, 10, 10); // Aumenta o espaçamento em todos os lados
-        mainPanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         listarButton.addActionListener(new ActionListener() {
             @Override
@@ -345,6 +338,7 @@ public class InterfaceMenu extends JFrame {
     }
 
     public static void Iniciar() {
+        Logs.Clear();
         char[] operationSymbols = { '-', '\\', '|', '/' };
         int symbolIndex = 0;
         try {
@@ -361,11 +355,15 @@ public class InterfaceMenu extends JFrame {
                 symbolIndex = (symbolIndex + 1) % operationSymbols.length;
 
                 // Aguardar um curto período de tempo para criar a animação
-                Thread.sleep(40);
+                Thread.sleep(20);
 
                 // Incrementar a porcentagem
                 percent++;
             }
+            Logs.Clear();
+            System.out.println("\r");
+            Logs.Succeed("=================== Programa Iniciado ===================");
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -373,6 +371,7 @@ public class InterfaceMenu extends JFrame {
         SwingUtilities.invokeLater(InterfaceMenu::new);
         Logs.Succeed("Interface gráfica iniciada com sucesso e Operando!");
         while (Running) {
+
         }
 
     }
