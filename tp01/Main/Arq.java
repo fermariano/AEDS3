@@ -20,15 +20,7 @@ public class Arq {
             int idSeacher = -1;
             try {
                 Logs.Details("Procurando a música com ID: " + ID + "...");
-                for (; idSeacher != ID || Arq.meta.lapide; raf.seek(raf.getFilePointer() + (Arq.meta.sizeBytes - 4))) { // pula
-                    // o
-                    // numero
-                    // de
-                    // bytes
-                    // ate
-                    // achar
-                    // o
-                    // registro
+                for (; idSeacher != ID || Arq.meta.lapide; raf.seek(raf.getFilePointer() + (Arq.meta.sizeBytes - 4))) { // pula o numero de bytes ate achar o registro
                     this.metaSeek = raf.getFilePointer(); // salva a posição do inicio da lapide
                     Arq.meta.readMetaData(); // le os metadados
                     this.metaData = Arq.meta; // salva os metadados na classe
