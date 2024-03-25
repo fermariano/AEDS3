@@ -283,8 +283,7 @@ public class InterfaceMenu extends JFrame {
                 Musica musica;
                 Arq.IniciarLeituraSequencial();
 
-                // Adicione aqui o código para preencher a tabela com os registros do banco de
-                // dados
+          
                 while ((musica = Arq.getRegistro()) != null) {
                     tableModel.addRow(new Object[] {
                             musica.getId(),
@@ -355,7 +354,7 @@ public class InterfaceMenu extends JFrame {
                 symbolIndex = (symbolIndex + 1) % operationSymbols.length;
 
                 // Aguardar um curto período de tempo para criar a animação
-                Thread.sleep(20);
+                Thread.sleep(50);
 
                 // Incrementar a porcentagem
                 percent++;
