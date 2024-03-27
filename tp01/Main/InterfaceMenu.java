@@ -17,12 +17,15 @@ public class InterfaceMenu extends JFrame {
     private JTextField dancabilidadeTextField = new JTextField(20);
     private JTextField hashTextField = new JTextField(20);
     private JTextField idTextField = new JTextField(20);
+    // Buttons
     private JButton adicionarButton = new JButton("Adicionar");
     private JButton atualizarButton = new JButton("Atualizar");
     private JButton pesquisarButton = new JButton("Pesquisar");
     private JButton deletarButton = new JButton("Deletar");
     private JButton listarButton = new JButton("Listar Registros");
     private JButton MockDataButton = new JButton("Mock Data");
+    private JButton listUnvalidRegistersButton = new JButton("Listar Inválidos");
+    // Tabela
     private DefaultTableModel tableModel;
     private JTable table;
 
@@ -103,6 +106,7 @@ public class InterfaceMenu extends JFrame {
         buttonsPanel.add(deletarButton);
         buttonsPanel.add(listarButton);
         buttonsPanel.add(MockDataButton);
+        buttonsPanel.add(listUnvalidRegistersButton);
         // Adicionando o painel de botões ao painel principal no sul
         mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
 
@@ -133,6 +137,10 @@ public class InterfaceMenu extends JFrame {
         MockDataButton.setFont(buttonFont);
         MockDataButton.setForeground(Color.WHITE);
         MockDataButton.setBackground(buttonColor);
+
+        listUnvalidRegistersButton.setFont(buttonFont);
+        listUnvalidRegistersButton.setForeground(Color.BLACK);
+        listUnvalidRegistersButton.setBackground(Color.RED);
 
         // Configuração da tabela
         tableModel = new DefaultTableModel();
@@ -220,7 +228,6 @@ public class InterfaceMenu extends JFrame {
                     Logs.Alert("Erro ao atualizar a música:\n Numero esperado " + ex.getMessage());
                 }
 
-                
             }
         });
 
@@ -254,7 +261,7 @@ public class InterfaceMenu extends JFrame {
                 } catch (Exception ex) {
                     Logs.Alert("Erro ao pesquisar a música:\n" + ex.getMessage());
                 }
-               
+
             }
         });
 
@@ -270,7 +277,7 @@ public class InterfaceMenu extends JFrame {
                 } catch (Exception ex) {
                     Logs.Alert("Erro ao deletar a música:\n" + ex.getMessage() + "\n" + ex.getClass());
                 }
-                
+
                 listarButton.doClick();
             }
         });
@@ -279,11 +286,10 @@ public class InterfaceMenu extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Limpa a tabela antes de listar os registros
-                tableModel.setRowCount(0);
+                tableModel.setRowCount(0);// limpar a tabela
                 Musica musica;
                 Arq.IniciarLeituraSequencial();
 
-          
                 while ((musica = Arq.getRegistro()) != null) {
                     tableModel.addRow(new Object[] {
                             musica.getId(),
@@ -310,11 +316,51 @@ public class InterfaceMenu extends JFrame {
                 artistaTextField.setText(musica.getArtista());
                 popularidadeTextField.setText(String.valueOf(musica.getPopularidade()));
                 dataLancamentoTextField.setText(musica.getDataLancamento());
-                generoTextField.setText(musica.getGenero());
+
+                generoTextField.setText(musica.getGenero().replace(',', ';')); // repalce , with ; -> function
                 dancabilidadeTextField.setText(String.valueOf(musica.getDancabilidade()));
                 hashTextField.setText(musica.getHash());
 
                 listarButton.doClick();
+            }
+        });
+
+        listUnvalidRegistersButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int id_to_recover = Integer.parseInt(idTextField.getText());
+                    Arq.IniciarLeituraSequencial();
+
+                    if (id_to_recover != 0) { // preguiç de fazer um botão para recuperar
+                        if (Arq.Recover(id_to_recover)) {
+                            Logs.Succeed("interface : Registro recuperado com sucesso!");
+                        } else {
+                            Logs.KindaAlert("Interface : Registro não encontrado!");
+                        }
+                    }
+                    idTextField.setText(""); // limpar o campo de texto
+                    listUnvalidRegistersButton.doClick(); // atualizar o campo de texto
+                    return;
+                } catch (Exception error) {
+                    Logs.Details("Interface : ID não preenchido para recover ");
+                }
+
+                LimparTabela();
+                Arq.IniciarLeituraSequencial();
+                Musica musica;
+                while ((musica = Arq.getInvalidRegister(null)) != null) {
+                    tableModel.addRow(new Object[] {
+                            musica.getId(),
+                            musica.getNome(),
+                            musica.getArtista(),
+                            musica.getPopularidade(),
+                            musica.getDataLancamento(),
+                            musica.getGenero(),
+                            musica.getDancabilidade(),
+                            musica.getHash()
+                    });
+                }
             }
         });
 
@@ -332,8 +378,21 @@ public class InterfaceMenu extends JFrame {
         hashTextField.setText("");
     }
 
-    private void LimparTabela() {
+    public void LimparTabela() {
         tableModel.setRowCount(0);
+    }
+
+    public void DisplaySong(Musica musica) {
+        tableModel.addRow(new Object[] {
+                musica.getId(),
+                musica.getNome(),
+                musica.getArtista(),
+                musica.getPopularidade(),
+                musica.getDataLancamento(),
+                musica.getGenero(),
+                musica.getDancabilidade(),
+                musica.getHash()
+        });
     }
 
     public static void Iniciar() {
@@ -354,12 +413,14 @@ public class InterfaceMenu extends JFrame {
                 symbolIndex = (symbolIndex + 1) % operationSymbols.length;
 
                 // Aguardar um curto período de tempo para criar a animação
-                Thread.sleep(50);
+                Thread.sleep(10);
 
                 // Incrementar a porcentagem
                 percent++;
+
             }
             Logs.Clear();
+            Sorting.IntercalacaoBalanceada();
             System.out.println("\r");
             Logs.Succeed("=================== Programa Iniciado ===================");
 
@@ -368,9 +429,10 @@ public class InterfaceMenu extends JFrame {
         }
 
         SwingUtilities.invokeLater(InterfaceMenu::new);
+
         Logs.Succeed("Interface gráfica iniciada com sucesso e Operando!");
         while (Running) {
-
+            // Mantenha o programa em execução
         }
 
     }

@@ -4,6 +4,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.RandomAccessFile;
+
+import javax.xml.crypto.Data;
+
 import java.io.IOException;
 
 public class Arq {
@@ -20,7 +23,8 @@ public class Arq {
             int idSeacher = -1;
             try {
                 Logs.Details("Procurando a música com ID: " + ID + "...");
-                for (; idSeacher != ID || Arq.meta.lapide; raf.seek(raf.getFilePointer() + (Arq.meta.sizeBytes - 4))) { // pula o numero de bytes ate achar o registro
+                for (; idSeacher != ID || Arq.meta.lapide; raf.seek(raf.getFilePointer() + (Arq.meta.sizeBytes - 4))) { 
+                                                                                                                        
                     this.metaSeek = raf.getFilePointer(); // salva a posição do inicio da lapide
                     Arq.meta.readMetaData(); // le os metadados
                     this.metaData = Arq.meta; // salva os metadados na classe
@@ -64,6 +68,12 @@ public class Arq {
 
     }
 
+    public static void updateFile(RandomAccessFile gg){
+        raf = gg;
+        meta = new MetaData(raf);
+        Logs.Succeed("Atualizado com sucesso!");
+    }
+
     // procurar a musica
     public static Musica FindSongID(int ID) {
         Musica musica = null;
@@ -83,6 +93,8 @@ public class Arq {
     public static boolean DeleteSong(int id) {
         boolean status = false;
         DataFinder finder = new DataFinder();
+        DataFinder datasfound[] = new DataFinder[100];
+
         if (finder.FindSong(id)) { // encontrou a musica a ser deletada
             try {
                 raf.seek(finder.metaSeek); // coloca o cabeçote no inicio do registro que vai ser deletado
@@ -142,8 +154,10 @@ public class Arq {
         }
     }
 
+    
+
     // le o registro
-    public static Musica getRegistro() {
+    public static Musica getRegistro() { //retorna registros validos
         Musica buffer = new Musica();
         try {
 
@@ -224,6 +238,15 @@ public class Arq {
 
     }
 
+    public static Musica[] getSongs(int quantitiy){
+        Musica[] songs = new Musica[quantitiy];
+        IniciarLeituraSequencial();
+        for(int i = 0; i < quantitiy; i++){
+            songs[i] = getRegistro();
+        }
+        return songs;
+    }
+
     // escreve o ultimo id inserido
     public static void writeLastID(int id) {
         try {
@@ -246,5 +269,94 @@ public class Arq {
         }
 
     }
+
+    public static Musica getInvalidRegister(DataFinder recover) {
+        Musica buffer = new Musica();
+        try {
+            byte[] bytes;
+            do {
+                if (recover != null) {
+                    recover.metaSeek = raf.getFilePointer(); // salva a posição do inicio da lapide
+                }
+                Arq.meta.readMetaData();
+                bytes = new byte[Arq.meta.sizeBytes]; // Cria um array de bytes com o tamanho do registro
+                raf.readFully(bytes); // Lê o registro completo
+            } while (!Arq.meta.lapide); // so retorna reg valido
+
+            buffer = Musica.fromByteArray(bytes);
+            return buffer;
+
+        } catch (IOException e) {
+            if (e instanceof java.io.EOFException) {
+                Logs.Alert("Registro não encontrado!\n Raf esta em EOF Exception :" + e.getMessage());
+                return null;
+            }
+            Logs.Alert("Erro em Leitura de Registro \nException :" + e.getMessage());
+            return null;
+        } catch (IllegalArgumentException e) {
+            Logs.Alert("Erro na Conversão do Registro : " + e.getMessage());
+            Logs.KindaAlert("Registro Lido: " + buffer.toString());
+            Logs.KindaAlert("Lapide: " + Arq.meta.lapide + " Tamanho: " + Arq.meta.sizeBytes);
+            return null;
+        }
+
+    }
+
+    public static boolean Recover(int id) throws Exception {
+        boolean status = false;
+        int idbuffer = -1;
+        DataFinder recover = new DataFinder();
+        DataFinder finder = new DataFinder();
+        while (idbuffer != id && !status) {
+            Musica buffer = getInvalidRegister(recover);
+            if (buffer != null) {
+                idbuffer = buffer.getId();
+                if (idbuffer == id) {
+                    try {
+                        raf.seek(recover.metaSeek); // coloca o ponteiro no inicio do registro
+                        raf.writeBoolean(false); // seta a lapide como false
+                        status = true;
+                        Logs.Succeed("Musica recuperada com sucesso!");
+                    } catch (IOException e) {
+                        Logs.Alert("Erro ao recuperar a música: " + e.getMessage());
+                    }
+                    status = true;
+                }
+
+            } else {
+                break;
+            }
+        }
+        return status;
+    }
+
+    public static int getBytesMedium() {
+        try {
+            raf.seek(4);// pula o lastID
+            int totalBytes = 0;
+            int count = 0;
+            while ((getRegistro()) != null) {
+                totalBytes += Arq.meta.sizeBytes; // Arq tem o tamanho do registro da musica lida
+                count++;
+            }
+
+            return totalBytes / count;
+        } catch (Exception e) {
+            Logs.Alert("Erro ao calcular a média de bytes: " + e.getMessage());
+            return -1;
+        }
+
+    }
+
+    public static long getSize() {
+        try {
+            return raf.length();
+        } catch (IOException e) {
+            Logs.Alert("Erro ao pegar o tamanho do arquivo: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    
 
 }

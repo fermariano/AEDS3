@@ -1,7 +1,7 @@
 
-
 import java.io.*;
 import java.io.RandomAccessFile;
+
 public class MetaData {
     boolean lapide;
     int sizeBytes;
@@ -16,18 +16,20 @@ public class MetaData {
 
     }
 
-    void readMetaData() {
+    Boolean readMetaData() {
         try {
             this.lapide = raf.readBoolean(); // Lê a lapide
             this.sizeBytes = raf.readInt(); // Lê o tamanho do registro da música
-        } catch (Exception e) { //se for end of file
-            if(e instanceof java.io.EOFException)
+            return true;
+        } catch (Exception e) { // se for end of file
+            if (e instanceof java.io.EOFException)
                 Logs.KindaAlert("MetaDados estão em EOF!");
             else
-            Logs.Alert("Erro ao ler os metadados: " + e.getMessage());
-        }
-    }
+                Logs.Alert("Erro ao ler os metadados: " + e.getMessage());
 
+        }
+        return false;
+    }
 
     void writeMetaData(int sizebytes) {
         try {
@@ -35,6 +37,14 @@ public class MetaData {
             raf.writeInt(sizebytes);
         } catch (IOException e) {
             Logs.Alert("Erro ao escrever os metadados: " + e.getMessage());
+        }
+    }
+
+    void WriteSize(int size) {
+        try {
+            raf.writeInt(size);
+        } catch (IOException e) {
+            Logs.Alert("Erro ao escrever o tamanho: " + e.getMessage());
         }
     }
 
