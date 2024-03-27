@@ -130,8 +130,8 @@ public class Sorting {
         }
         Arq.IniciarLeituraSequencial(); // inicia a leitura sequencial do arquivo original
         int counts = 0;
-        while ( !readAll ) { // colocar nos arquivos temporários (10 blocos por
-                                         // aqrquivo
+        while (!readAll) { // colocar nos arquivos temporários (10 blocos por
+                           // aqrquivo
             // temporário)
             for (FileManipulator manipulator : tempFileManipulator) { // escrever blocos nos arquivos temporários, 1
                                                                       // por vez e muda de arquivo
@@ -147,10 +147,9 @@ public class Sorting {
                                                                                          // registro
                         manipulator.file.write(song.toByteArray());// escreve o registro
                         counts++;
-
                     }
-                    manipulator.addPointer(manipulator.file.getFilePointer());
-                    // registrando o ponteiro dos blocos ordenados
+                    manipulator.addPointer(manipulator.file.getFilePointer()); // registrando o ponteiro dos blocos
+                                                                              // ordenados
 
                 } catch (Exception error) {
                     Logs.Alert("Erro ao escrever no arquivo temporário: " + error.getMessage());
@@ -173,7 +172,6 @@ public class Sorting {
     }
 
     public static void intercalar(FileManipulator[] readingFiles) {
-
 
         FileManipulator[] tempFilesCopy = new FileManipulator[files_quant];
 
@@ -201,14 +199,17 @@ public class Sorting {
                 }
 
                 for (; !emptyListPointer(readingFiles);) {
+                    System.out.println("quantidade de ponteiros: 1 ==" + readingFiles[0].lista.size());
+                    System.out.println("quantidade de ponteiros: 2 ==" + readingFiles[1].lista.size());
                     intercalFile(readingFiles, tempFilesCopy[fileWriting], false);
                     for (FileManipulator manipulator : readingFiles) {
-
-                        manipulator.registerPointer(); // indice de leitura
-
+                        manipulator.registerPointer(); // atualiza indice do bloco
                     }
                     fileWriting = (fileWriting + 1) % files_quant;
                 }
+
+                System.out.println("Sai com ponteiros: 1 ==" + readingFiles[0].lista.size());
+                System.out.println("Sai com ponteiros: 2 ==" + readingFiles[1].lista.size());
 
                 for (FileManipulator manipulator : readingFiles) {
                     manipulator.reestartLista();
@@ -229,16 +230,17 @@ public class Sorting {
         FileManipulator finalFile = new FileManipulator("Sorted.db");
         try {
 
+            finalFile.file.seek(0);
+            finalFile.file.writeInt(Musica.getLastID());
+            finalFile.isEOF = false;
+            finalFile.stop = false;
+
             for (FileManipulator manipulator : readingFiles) {
                 manipulator.file.seek(0);
                 manipulator.isEOF = false;
                 manipulator.stop = false;
             }
 
-            finalFile.file.seek(0);
-            finalFile.file.writeInt(Musica.getLastID());
-            finalFile.isEOF = false;
-            finalFile.stop = false;
         } catch (Exception e) {
             Logs.Alert("Erro ao escrever no arquivo final: " + e.getMessage());
         }
@@ -256,7 +258,6 @@ public class Sorting {
 
         while (!Stop(readingFiles)) {
             Musica songToWrite = getMinorSong(readingFiles, Final);
-            System.out.println("Musica a ser escrita: " + songToWrite.id);
             if (songToWrite != null) {
                 try {
                     tempFilesCopy.metaData.writeMetaData(songToWrite.toByteArray().length);
@@ -269,12 +270,12 @@ public class Sorting {
 
         try {
             tempFilesCopy.addPointer(tempFilesCopy.file.getFilePointer());
-            for (FileManipulator file : readingFiles) {
+            for (FileManipulator file : readingFiles) {// resetar o status de leitura
                 file.stop = false;
             }
 
         } catch (Exception error) {
-
+            Logs.Alert("Erro ao intercalar os arquivos: " + error.getMessage());
         }
 
     }
@@ -290,7 +291,7 @@ public class Sorting {
 
     public static boolean Oneblock(FileManipulator[] readingFiles) {
         for (FileManipulator manipulator : readingFiles) {
-            if (manipulator.lista.size() > 1) {
+            if (manipulator.lista.size() >= 1) { // queremos size 0
                 return false;
             }
         }
@@ -332,7 +333,7 @@ public class Sorting {
                 if (source[i].isEOF)
                     continue;
 
-                Musica song = getRegistro(source[i]); // se der erro nos metadados
+                Musica song = getRegistro(source[i]); 
 
                 if (song == null) {
                     source[i].isEOF = true;
@@ -427,7 +428,14 @@ class FileManipulator {
     }
 
     public void registerPointer() {
-        register = lista.removeFirst();
+        try{
+          register = lista.removeFirst();  
+          register = file.length();
+        }catch(Exception e){
+            stop = true;
+            Logs.KindaAlert("Sem ponteiros para registrar");
+        }
+        
     }
 
     public void reestartLista() {

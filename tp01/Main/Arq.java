@@ -2,11 +2,7 @@
 //metodos de escrita e leitura aqui 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.RandomAccessFile;
-
-import javax.xml.crypto.Data;
-
 import java.io.IOException;
 
 public class Arq {
@@ -93,7 +89,6 @@ public class Arq {
     public static boolean DeleteSong(int id) {
         boolean status = false;
         DataFinder finder = new DataFinder();
-        DataFinder datasfound[] = new DataFinder[100];
 
         if (finder.FindSong(id)) { // encontrou a musica a ser deletada
             try {
@@ -306,7 +301,6 @@ public class Arq {
         boolean status = false;
         int idbuffer = -1;
         DataFinder recover = new DataFinder();
-        DataFinder finder = new DataFinder();
         while (idbuffer != id && !status) {
             Musica buffer = getInvalidRegister(recover);
             if (buffer != null) {
