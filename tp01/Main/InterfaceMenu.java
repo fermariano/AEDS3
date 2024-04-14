@@ -254,22 +254,27 @@ public class InterfaceMenu extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String searchText = idTextField.getText().trim(); // Obtém o texto do campo de pesquisa e remove espaços
                                                                   // em branco
-
+                Musica musica = null;
                 try {
-                    // Tenta extrair o número de ID do texto
-                    int ID = Integer.parseInt(searchText.replaceAll("[^0-9]", ""));
-                    Musica musica = null;
-                    // Verifica se o texto contém "B" ou "H"
-                    if (searchText.contains("B")) {
-                        // Se contiver "B", chama a função para pesquisar na B-Tree
-                        musica = Arq.searchBtree(ID);
-                    } else if (searchText.contains("H")) {
-                        // Se contiver "H", chama a função para pesquisar na Hash
-                        musica = Arq.searchHash(ID);
+                    if (! idTextField.getText().equals("")) {
+                        int ID = Integer.parseInt(searchText.replaceAll("[^0-9]", ""));
+                        // Verifica se o texto contém "B" ou "H"
+                        if (searchText.contains("B")) {
+                            // Se contiver "B", chama a função para pesquisar na B-Tree
+                            musica = Arq.searchBtree(ID);
+                        } else if (searchText.contains("H")) {
+                            // Se contiver "H", chama a função para pesquisar na Hash
+                            musica = Arq.searchHash(ID);
+                        } else {
+                            // Caso contrário, realiza a pesquisa pelo ID
+                            musica = Arq.FindSongID(ID);
+                        }
                     } else {
-                        // Caso contrário, realiza a pesquisa pelo ID
-                        musica = Arq.FindSongID(ID);
+                        String genre = generoTextField.getText();
+                        searchByGenre(genre);
+                        return;
                     }
+
                     if (musica != null) {
                         Logs.Details("Musica encontrada:\n" + musica.toString());
                         LimparTabela();

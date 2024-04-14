@@ -346,6 +346,8 @@ public class Diretorio {
         }
     }
 
+    
+
     public static class UnitPointer { // classe que representa um ponteiro para um bucket
         int numero;
         long Bucket;
@@ -361,4 +363,5 @@ public class Diretorio {
             this.Bucket = BucketPos;
         }
     }
+
 }

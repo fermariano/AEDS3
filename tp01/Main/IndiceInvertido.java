@@ -60,9 +60,7 @@ public class IndiceInvertido {
     public static void start() {
         try {
             indFile = new RandomAccessFile("IndiceInvertido.dat", "rw");
-            NomeMusicaFile = new RandomAccessFile("NomeMusica.dat", "rw");
             genFileList = new RandomAccessFile("GeneroList.dat", "rw");
-            NomeMusicaFileList = new RandomAccessFile("NomeMusicaList.dat", "rw");
             GenFinder.genFile = new RandomAccessFile("Genero.dat", "rw");
 
         } catch (Exception e) {

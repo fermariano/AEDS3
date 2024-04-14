@@ -61,7 +61,6 @@ public class Arq {
             IndiceInvertido.start();
             Diretorio.start();
             Btree.start();
-
         } catch (IOException e) {
             Logs.Alert("Erro ao abrir o arquivo: " + e.getMessage());
         }
@@ -338,7 +337,6 @@ public class Arq {
                     }
                     status = true;
                 }
-
             } else {
                 break;
             }
@@ -400,22 +398,6 @@ public class Arq {
         }
     }
 
-    static void addBtree() {
-        MetaIndice meta[];
-        meta = Indices.getAllIndices("Source/DataBase/indices.db");
-        for (int i = 0; i < meta.length; i++) {
-
-            if (meta[i] != null) {
-                Btree.add(meta[i]);
-            }
-            if (i % 1000 == 0) {
-                Logs.Details("Inserindo : " + i);
-            }
-        }
-        Btree.printTree();
-
-    }
-
     public static Musica searchBtree(int ID) {
         MetaIndice meta = Btree.search(ID);
         if (meta != null) {
@@ -435,6 +417,17 @@ public class Arq {
         } else {
             Logs.Alert("Não encontrado");
             return null;
+        }
+    }
+
+    static void addGenres(){
+        MetaIndice indices[] = Indices.getAllIndices("Source/DataBase/indices.db");
+        for (int i = 0; i < indices.length; i++) {
+            Musica music = getByIndice(indices[i].getPosicao());
+            IndiceInvertido.addIndice(indices[i]);
+            if(i % 1000 == 0){
+                Logs.Details("Inserindo : " + i);
+            }
         }
     }
 
