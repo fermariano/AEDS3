@@ -321,16 +321,29 @@ public class Diretorio {
         }
     }
 
-    static boolean search(int id){
+    static MetaIndice search(int id){
         int hash = Hash(id);
         UnitPointer BucketP = getHashPointer(hash);
         Bucket bucket = new Bucket(BucketP.Bucket);
         for (int i = 0; i < Bucket.maxChaves; i++) {
             if (bucket.registroId[i] == id) {
-                return true;
+                return new MetaIndice(bucket.registroId[i], bucket.registroPos[i]);
             }
         }
-        return false;
+        return null;
+    }
+    static void updateIndex(MetaIndice reg){
+        int hash = Hash(reg.getId());
+
+        UnitPointer BucketP = getHashPointer(hash);
+        Bucket bucket = new Bucket(BucketP.Bucket);
+        for (int i = 0; i < Bucket.maxChaves; i++) {
+            if (bucket.registroId[i] == reg.getId()) {
+                bucket.registroPos[i] = reg.getPosicao();
+                bucket.writeBucket(BucketP.Bucket);
+                break;
+            }
+        }
     }
 
     public static class UnitPointer { // classe que representa um ponteiro para um bucket

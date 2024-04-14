@@ -135,11 +135,10 @@ public class Btree {
             }
             return -1;
         }
-
+        
         static int sizeBytes() {
             return 4 + (12 + 8) * order + 8;
         }
-
         boolean isLeaf() {
             for (int i = 0; i <= order; i++) {
                 if (children[i] != -1) {
@@ -202,7 +201,6 @@ public class Btree {
                 keys[i] = keys[i - 1];
             }
         }
-
         void arrastaPonteiros(int posicao) {
             for (int i = currentKeys + 1; i > posicao; i--) {
                 children[i] = children[i - 1];
@@ -345,7 +343,7 @@ public class Btree {
     }
 
     static void subir(MetaIndice elementoSubindo, long newNodePosition, long Nodeposition) {
-        if (Nodeposition == rootP) {
+        if (Nodeposition == rootP) { 
             Node newRoot = new Node();
             newRoot.addInNode(elementoSubindo, Nodeposition, newNodePosition);
             newRoot.isRoot = true;
@@ -407,33 +405,63 @@ public class Btree {
                 Node nextSearchTemp = new Node(searchtemp.children[i + 1]);
                 nextSearchTemp.position = searchtemp.children[i + 1];
                 return getFather(NodepositionTarget, nextSearchTemp);
+                
             }
         }
         return null;
     }
 
-    static boolean search(int id) {
+    static MetaIndice search(int id) {
         Node NodeRoot = new Node(rootP);
         return search(id, NodeRoot);
     }
 
-    static boolean search(int id, Node node) {
+    static MetaIndice search(int id, Node node) {
         for (int i = 0; i < node.currentKeys; i++) {
             if (node.keys[i].getId() == id) {
-                return true;
+                return node.keys[i];
             }
             if (node.keys[i].getId() > id) {
                 if (node.isLeaf()) {
-                    return false;
+                    return null;
                 }
                 Node nextNode = new Node(node.children[i]);
                 return search(id, nextNode);
             }
         }
         if (node.isLeaf()) {
-            return false;
+            return null;
         }
         Node nextNode = new Node(node.children[node.currentKeys]);
         return search(id, nextNode);
     }
+
+    static void updateIndex(MetaIndice metaIndice) {
+        Node root = new Node(rootP);
+        updateIndex(metaIndice, root, rootP);
+    }
+
+    
+    static MetaIndice updateIndex(MetaIndice metaIndice, Node node, long Nodeposition) {
+        for (int i = 0; i < node.currentKeys; i++) {
+            if (node.keys[i].getId() == metaIndice.getId()) {
+                node.keys[i].setPosicao(metaIndice.getPosicao());
+                node.write(Nodeposition);
+
+            }
+            if (node.keys[i].getId() > metaIndice.getId()) {
+                if (node.isLeaf()) {
+                    return null;
+                }
+                Node nextNode = new Node(node.children[i]);
+                return updateIndex(metaIndice, nextNode, node.children[i]);
+            }
+        }
+        if (node.isLeaf()) {
+            return null;
+        }
+        Node nextNode = new Node(node.children[node.currentKeys]);//for não alcança o ultimo filho
+        return updateIndex(metaIndice, nextNode, node.children[node.currentKeys]);
+    }
+
 }

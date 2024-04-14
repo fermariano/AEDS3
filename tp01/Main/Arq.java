@@ -61,8 +61,6 @@ public class Arq {
             IndiceInvertido.start();
             Diretorio.start();
             Btree.start();
-            addBtree();
-            searchBtree();
 
         } catch (IOException e) {
             Logs.Alert("Erro ao abrir o arquivo: " + e.getMessage());
@@ -210,6 +208,10 @@ public class Arq {
             raf.write(ba); // escreve o registro
             Logs.Succeed("Registro Adicionado com sucesso!");
             MakeIndice(nova.getId(), pos);
+            MetaIndice indice = new MetaIndice(nova.getId(), pos);
+            Btree.add(indice);
+            Diretorio.inserir(indice);
+            IndiceInvertido.addIndice(indice);
 
             return true;
         } catch (IOException e) {
@@ -225,9 +227,14 @@ public class Arq {
     public static boolean addRegistroExistenteEOF(Musica newsong) {
         try {
             byte[] ba = newsong.toByteArray(); // tranforma o registro em array de bytes
+            long pos = raf.getFilePointer();
             raf.seek(raf.length()); // leva o ponteiro do RAF para o final do arquivo
             meta.writeMetaData(ba.length); // escreve o metadado do registro
             raf.write(ba); // escreve o registro
+            MetaIndice indice = new MetaIndice(newsong.getId(), pos);
+            Btree.updateIndex(indice);// atualiza Btree
+            Diretorio.updateIndex(indice);// atualiza Index Hash
+
             return true;
         } catch (IOException e) {
             Logs.Alert("Erro ao Adicionar registros em fim de arquivo!\n addRegistroExistenteEOF Exception :"
@@ -397,6 +404,7 @@ public class Arq {
         MetaIndice meta[];
         meta = Indices.getAllIndices("Source/DataBase/indices.db");
         for (int i = 0; i < meta.length; i++) {
+
             if (meta[i] != null) {
                 Btree.add(meta[i]);
             }
@@ -408,47 +416,25 @@ public class Arq {
 
     }
 
-    public static void searchBtree() {
-        MetaIndice indices[] = Indices.getAllIndices("Source/DataBase/indices.db");
-        double porcentagem_encontrados = 0;
-        double encontrados = 0;
-        double total = 0;
-        for (int i = 0; i < indices.length; i++) {
-            if (indices[i] != null) {
-                total++;
-                if (Btree.search(indices[i].getId())) {
-                    encontrados++;
-                }
-                if (i % 1000 == 0) {
-                    porcentagem_encontrados = (encontrados / total) * 100;
-                    Logs.Details("Encontrados: " + encontrados + " Total: " + total + " Porcentagem: "
-                            + porcentagem_encontrados + "%");
-                }
-
-            }
-
+    public static Musica searchBtree(int ID) {
+        MetaIndice meta = Btree.search(ID);
+        if (meta != null) {
+            Logs.Succeed("Encontrado em Btree: " + meta.getId());
+            return getByIndice(meta.getPosicao());
+        } else {
+            Logs.Alert("Não encontrado");
+            return null;
         }
     }
 
-    public static void searhHash() {
-        MetaIndice indices[] = Indices.getAllIndices("Source/DataBase/indices.db");
-        double porcentagem_encontrados = 0;
-        double encontrados = 0;
-        double total = 0;
-        for (int i = 0; i < indices.length; i++) {
-            if (indices[i] != null) {
-                total++;
-                if (Diretorio.search(indices[i].getId())) {
-                    encontrados++;
-                }
-                if (i % 1000 == 0) {
-                    porcentagem_encontrados = (encontrados / total) * 100;
-                    Logs.Details("Encontrados: " + encontrados + " Total: " + total + " Porcentagem: "
-                            + porcentagem_encontrados + "%");
-                }
-
-            }
-
+    public static Musica searchHash(int ID) {
+        MetaIndice meta = Diretorio.search(ID);
+        if (meta != null) {
+            Logs.Succeed("Encontrado em HASH: " + meta.getId());
+            return getByIndice(meta.getPosicao());
+        } else {
+            Logs.Alert("Não encontrado");
+            return null;
         }
     }
 

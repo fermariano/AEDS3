@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class InterfaceMenu extends JFrame {
     private static boolean Running = true;
@@ -251,12 +252,28 @@ public class InterfaceMenu extends JFrame {
         pesquisarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    int ID = Integer.parseInt(idTextField.getText());
-                    Musica musica = Arq.FindSongID(ID);
+                String searchText = idTextField.getText().trim(); // Obtém o texto do campo de pesquisa e remove espaços
+                                                                  // em branco
 
-                    LimparTabela();
+                try {
+                    // Tenta extrair o número de ID do texto
+                    int ID = Integer.parseInt(searchText.replaceAll("[^0-9]", ""));
+                    Musica musica = null;
+                    // Verifica se o texto contém "B" ou "H"
+                    if (searchText.contains("B")) {
+                        // Se contiver "B", chama a função para pesquisar na B-Tree
+                        musica = Arq.searchBtree(ID);
+                    } else if (searchText.contains("H")) {
+                        // Se contiver "H", chama a função para pesquisar na Hash
+                        musica = Arq.searchHash(ID);
+                    } else {
+                        // Caso contrário, realiza a pesquisa pelo ID
+                        musica = Arq.FindSongID(ID);
+                    }
                     if (musica != null) {
+                        Logs.Details("Musica encontrada:\n" + musica.toString());
+                        LimparTabela();
+
                         tableModel.addRow(new Object[] {
                                 musica.getId(),
                                 musica.getNome(),
@@ -273,19 +290,26 @@ public class InterfaceMenu extends JFrame {
                     }
                     limparCampos();
                 } catch (NumberFormatException ex) {
+                    // Se não for possível extrair um número de ID, trata como pesquisa por outro
+                    // critério
                     if (!generoTextField.getText().equals("")) {
                         searchByGenre(generoTextField.getText());
                         generoTextField.setText("");
                     }
 
-                    Logs.Alert("Erro ao pesquisar a música:\n Numero esperado " + ex.getMessage());
+                    Logs.Alert("Erro ao pesquisar a música:\nNúmero esperado " + ex.getMessage());
                 } catch (Exception ex) {
                     Logs.Alert("Erro ao pesquisar a música:\n" + ex.getMessage());
+                    if (!generoTextField.getText().equals("")) {
+                        searchByGenre(generoTextField.getText());
+                        generoTextField.setText("");
+                    }
                 }
             }
         });
 
         deletarButton.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -417,14 +441,16 @@ public class InterfaceMenu extends JFrame {
 
     public static void Iniciar() {
 
-
         Logs.Succeed("=================== Programa Iniciado ===================");
 
         SwingUtilities.invokeLater(InterfaceMenu::new);
 
         Logs.Succeed("Interface gráfica iniciada com sucesso e Operando!");
+        String red = "\033[0;31m";
+        String reset = "\033[0m";
+        Logs.KindaAlert("Coloque H ou B antes do ID para pesquisar na Hash ou B-Tree");
         while (Running) {
-            // Mantenha o programa em execução
+
         }
 
     }
@@ -464,9 +490,7 @@ public class InterfaceMenu extends JFrame {
                         musica.getHash()
                 });
             }
-
         }
-
     }
 
     public static void main(String args[]) {
