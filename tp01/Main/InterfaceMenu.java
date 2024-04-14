@@ -6,6 +6,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class InterfaceMenu extends JFrame {
     private static boolean Running = true;
@@ -25,6 +26,7 @@ public class InterfaceMenu extends JFrame {
     private JButton listarButton = new JButton("Listar Registros");
     private JButton MockDataButton = new JButton("Mock Data");
     private JButton listUnvalidRegistersButton = new JButton("Listar Inválidos");
+    private JButton ordenarButton = new JButton("Ordenar");
     // Tabela
     private DefaultTableModel tableModel;
     private JTable table;
@@ -107,6 +109,7 @@ public class InterfaceMenu extends JFrame {
         buttonsPanel.add(listarButton);
         buttonsPanel.add(MockDataButton);
         buttonsPanel.add(listUnvalidRegistersButton);
+        buttonsPanel.add(ordenarButton);
         // Adicionando o painel de botões ao painel principal no sul
         mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
 
@@ -141,6 +144,10 @@ public class InterfaceMenu extends JFrame {
         listUnvalidRegistersButton.setFont(buttonFont);
         listUnvalidRegistersButton.setForeground(Color.BLACK);
         listUnvalidRegistersButton.setBackground(Color.RED);
+
+        ordenarButton.setFont(buttonFont);
+        ordenarButton.setForeground(Color.WHITE);
+        ordenarButton.setBackground(buttonColor);
 
         // Configuração da tabela
         tableModel = new DefaultTableModel();
@@ -201,6 +208,14 @@ public class InterfaceMenu extends JFrame {
             }
         });
 
+        ordenarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Sorting.IntercalacaoBalanceada();
+                listarButton.doClick();
+            }
+        });
+
         atualizarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -239,6 +254,7 @@ public class InterfaceMenu extends JFrame {
                 try {
                     int ID = Integer.parseInt(idTextField.getText());
                     Musica musica = Arq.FindSongID(ID);
+
                     LimparTabela();
                     if (musica != null) {
                         tableModel.addRow(new Object[] {
@@ -257,11 +273,15 @@ public class InterfaceMenu extends JFrame {
                     }
                     limparCampos();
                 } catch (NumberFormatException ex) {
+                    if (!generoTextField.getText().equals("")) {
+                        searchByGenre(generoTextField.getText());
+                        generoTextField.setText("");
+                    }
+
                     Logs.Alert("Erro ao pesquisar a música:\n Numero esperado " + ex.getMessage());
                 } catch (Exception ex) {
                     Logs.Alert("Erro ao pesquisar a música:\n" + ex.getMessage());
                 }
-
             }
         });
 
@@ -396,37 +416,9 @@ public class InterfaceMenu extends JFrame {
     }
 
     public static void Iniciar() {
-        Logs.Clear();
-        char[] operationSymbols = { '-', '\\', '|', '/' };
-        int symbolIndex = 0;
-        try {
-            int percent = 0;
-            while (percent <= 100) {
-                // Limpar a tela do console
-                System.out.print("\r");
 
-                // Exibir a porcentagem atual e o símbolo de operação
-                Logs.DetailsNoLn("=================== Iniciando o programa =================== [" + percent + "%] "
-                        + operationSymbols[symbolIndex]);
 
-                // Alternar para o próximo símbolo de operação
-                symbolIndex = (symbolIndex + 1) % operationSymbols.length;
-
-                // Aguardar um curto período de tempo para criar a animação
-                Thread.sleep(10);
-
-                // Incrementar a porcentagem
-                percent++;
-
-            }
-            Logs.Clear();
-            Sorting.IntercalacaoBalanceada();
-            System.out.println("\r");
-            Logs.Succeed("=================== Programa Iniciado ===================");
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Logs.Succeed("=================== Programa Iniciado ===================");
 
         SwingUtilities.invokeLater(InterfaceMenu::new);
 
@@ -449,13 +441,39 @@ public class InterfaceMenu extends JFrame {
         }
     }
 
+    void searchByGenre(String genre) {
+        LimparTabela();
+        ArrayList<MetaIndice> musicas = IndiceInvertido.searchGenre(genre);
+        ArrayList<Musica> musicasEncontradas = new ArrayList<>();
+        for (MetaIndice metaIndice : musicas) {
+            Musica musica = Arq.getByIndice(metaIndice.getPosicao());
+            if (musica != null) {
+                musicasEncontradas.add(musica);
+            }
+        }
+        for (Musica musica : musicasEncontradas) {
+            if (musica != null) {
+                tableModel.addRow(new Object[] {
+                        musica.getId(),
+                        musica.getNome(),
+                        musica.getArtista(),
+                        musica.getPopularidade(),
+                        musica.getDataLancamento(),
+                        musica.getGenero(),
+                        musica.getDancabilidade(),
+                        musica.getHash()
+                });
+            }
+
+        }
+
+    }
+
     public static void main(String args[]) {
         Arq.Iniciar("songs.db");
         Musica.iniciar();
         Iniciar();
-        Logs.Clear();
 
         // Array de símbolos de operação para animação
-
     }
 }

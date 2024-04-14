@@ -3,24 +3,24 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.io.IOException;
 
 public class Arq {
 
     private static class DataFinder {
-        long seekSaver;
-        long metaSeek;
+        long seekSaver; // irá armazenar a posição do inicio do registro
+        long metaSeek;// irá armazenar a posição do inicio da lapide
         MetaData metaData; // irá armazenar os metadados da musica Encontrada
         Musica musica; // irá armazenar a musica encontrada
 
         public boolean FindSong(int ID) { // procura a musica por id
             IniciarLeituraSequencial(); // funçao que le o ultimo id inserido
-
             int idSeacher = -1;
             try {
                 Logs.Details("Procurando a música com ID: " + ID + "...");
-                for (; idSeacher != ID || Arq.meta.lapide; raf.seek(raf.getFilePointer() + (Arq.meta.sizeBytes - 4))) { 
-                                                                                                                        
+                for (; idSeacher != ID || Arq.meta.lapide; raf.seek(raf.getFilePointer() + (Arq.meta.sizeBytes - 4))) {
+
                     this.metaSeek = raf.getFilePointer(); // salva a posição do inicio da lapide
                     Arq.meta.readMetaData(); // le os metadados
                     this.metaData = Arq.meta; // salva os metadados na classe
@@ -58,13 +58,19 @@ public class Arq {
             Arq.meta = new MetaData(raf);
             Musica.setLastID(raf.readInt()); // pega o ultimo id inserido
             Logs.Succeed("Arquivo aberto com sucesso!\nClasse Arq Iniciada com sucesso!");
+            IndiceInvertido.start();
+            Diretorio.start();
+            Btree.start();
+            addBtree();
+            searchBtree();
+
         } catch (IOException e) {
             Logs.Alert("Erro ao abrir o arquivo: " + e.getMessage());
         }
 
     }
 
-    public static void updateFile(RandomAccessFile gg){
+    public static void updateFile(RandomAccessFile gg) {
         raf = gg;
         meta = new MetaData(raf);
         Logs.Succeed("Atualizado com sucesso!");
@@ -105,6 +111,14 @@ public class Arq {
         return status;
     }
 
+    private static void MakeIndice(int ID, Long pos) {
+        try {
+            Indices.writeIndice(ID, pos);
+        } catch (Exception e) {
+            Logs.Alert("Erro ao criar o indice: " + e.getMessage());
+        }
+    }
+
     // atualiza os dados da musica
     public static void UpdateSong(int ID, String newSong) {
         DataFinder finder = new DataFinder();
@@ -125,6 +139,7 @@ public class Arq {
                     Logs.Details(
                             "Registro Alterado é maior que o anterior, deletando e adicionando no fim do arquivo...");
                 }
+
                 Logs.Succeed("Musica atualizada com sucesso!");
             } catch (IOException e) {
                 Logs.Alert("Erro no update : " + e.getMessage());
@@ -149,10 +164,8 @@ public class Arq {
         }
     }
 
-    
-
     // le o registro
-    public static Musica getRegistro() { //retorna registros validos
+    public static Musica getRegistro() { // retorna registros validos
         Musica buffer = new Musica();
         try {
 
@@ -192,9 +205,12 @@ public class Arq {
             Musica.setLastID(nova.getId()); // atualiza na classe
             writeLastID(Musica.getLastID()); // atualiza no arquivo
             raf.seek(raf.length()); // joga o ponteiro do RAF para o final do arquivo
+            long pos = raf.getFilePointer();
             meta.writeMetaData(ba.length); // escreve os metadados do registro
             raf.write(ba); // escreve o registro
             Logs.Succeed("Registro Adicionado com sucesso!");
+            MakeIndice(nova.getId(), pos);
+
             return true;
         } catch (IOException e) {
             Logs.Alert(" Erro em Adicionar Registro addRegistro()\n error = " + e.getMessage());
@@ -212,7 +228,6 @@ public class Arq {
             raf.seek(raf.length()); // leva o ponteiro do RAF para o final do arquivo
             meta.writeMetaData(ba.length); // escreve o metadado do registro
             raf.write(ba); // escreve o registro
-            Logs.Succeed("Registro Realocado com Sucesso!");
             return true;
         } catch (IOException e) {
             Logs.Alert("Erro ao Adicionar registros em fim de arquivo!\n addRegistroExistenteEOF Exception :"
@@ -233,10 +248,10 @@ public class Arq {
 
     }
 
-    public static Musica[] getSongs(int quantitiy){
+    public static Musica[] getSongs(int quantitiy) {
         Musica[] songs = new Musica[quantitiy];
         IniciarLeituraSequencial();
-        for(int i = 0; i < quantitiy; i++){
+        for (int i = 0; i < quantitiy; i++) {
             songs[i] = getRegistro();
         }
         return songs;
@@ -351,6 +366,90 @@ public class Arq {
         }
     }
 
-    
+    public static void insertIntoBucket() {
+        MetaIndice meta[];
+        meta = Indices.getAllIndices("Source/DataBase/indices.db");
+        for (int i = 0; i < meta.length; i++) {
+            Diretorio.inserir(meta[i]);
+            if (i % 1000 == 0) {
+                Logs.Details("Inserindo : " + i);
+            }
+        }
+    }
+
+    public static Musica getByIndice(long pos) {
+        try {
+            raf.seek(pos);
+            meta.readMetaData();
+            if (meta.lapide) {
+                return null;
+            }
+            byte[] bytes = new byte[meta.sizeBytes];
+            raf.readFully(bytes);
+            return Musica.fromByteArray(bytes);
+        } catch (IOException e) {
+            Logs.Alert("Erro ao pegar o indice: " + e.getMessage());
+            return null;
+        }
+    }
+
+    static void addBtree() {
+        MetaIndice meta[];
+        meta = Indices.getAllIndices("Source/DataBase/indices.db");
+        for (int i = 0; i < meta.length; i++) {
+            if (meta[i] != null) {
+                Btree.add(meta[i]);
+            }
+            if (i % 1000 == 0) {
+                Logs.Details("Inserindo : " + i);
+            }
+        }
+        Btree.printTree();
+
+    }
+
+    public static void searchBtree() {
+        MetaIndice indices[] = Indices.getAllIndices("Source/DataBase/indices.db");
+        double porcentagem_encontrados = 0;
+        double encontrados = 0;
+        double total = 0;
+        for (int i = 0; i < indices.length; i++) {
+            if (indices[i] != null) {
+                total++;
+                if (Btree.search(indices[i].getId())) {
+                    encontrados++;
+                }
+                if (i % 1000 == 0) {
+                    porcentagem_encontrados = (encontrados / total) * 100;
+                    Logs.Details("Encontrados: " + encontrados + " Total: " + total + " Porcentagem: "
+                            + porcentagem_encontrados + "%");
+                }
+
+            }
+
+        }
+    }
+
+    public static void searhHash() {
+        MetaIndice indices[] = Indices.getAllIndices("Source/DataBase/indices.db");
+        double porcentagem_encontrados = 0;
+        double encontrados = 0;
+        double total = 0;
+        for (int i = 0; i < indices.length; i++) {
+            if (indices[i] != null) {
+                total++;
+                if (Diretorio.search(indices[i].getId())) {
+                    encontrados++;
+                }
+                if (i % 1000 == 0) {
+                    porcentagem_encontrados = (encontrados / total) * 100;
+                    Logs.Details("Encontrados: " + encontrados + " Total: " + total + " Porcentagem: "
+                            + porcentagem_encontrados + "%");
+                }
+
+            }
+
+        }
+    }
 
 }

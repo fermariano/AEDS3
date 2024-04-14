@@ -1,0 +1,42 @@
+=====================Binary Tree=====================
+        ==**Root: 12**==
+        Value: 10
+        Position: 12
+        Left Child Position: 32
+        Right Child Position: 52
+
+        Left Child:
+                Value: 5
+                Position: 32
+                Left Child Position: 72
+                Right Child Position: 92
+
+                Left Child:
+                        Value: 3
+                        Position: 72
+                        Left Child Position: -1
+                        Right Child Position: -1
+
+                Right Child:
+                        Value: 7
+                        Position: 92
+                        Left Child Position: -1
+                        Right Child Position: -1
+
+        Right Child:
+                Value: 15
+                Position: 52
+                Left Child Position: 112
+                Right Child Position: 132
+
+                Left Child:
+                        Value: 12
+                        Position: 112
+                        Left Child Position: -1
+                        Right Child Position: -1
+
+                Right Child:
+                        Value: 17
+                        Position: 132
+                        Left Child Position: -1
+                        Right Child Position: -1

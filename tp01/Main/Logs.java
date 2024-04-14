@@ -72,11 +72,3 @@ public class Logs {
         }
     }
 }
-
-/*
- * public static void DetailsNoLn(String Message) {
- * //color blue
- * String BLUE = "\u001B[34m";
- * System.out.print( BLUE + Message);
- * }
- */
