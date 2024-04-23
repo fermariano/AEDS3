@@ -18,7 +18,7 @@ public class Btree {
         long position;
 
         Node() {
-            keys = new MetaIndice[order];
+            keys = new MetaIndice[order]; //ordem é 8
             children = new long[order + 1];
             currentKeys = 0; // + 4
             for (int i = 0; i < order; i++) { // 12 + 8 * order
@@ -244,8 +244,8 @@ public class Btree {
 
     public static void add(MetaIndice metaIndice) {
         Node NodeRoot = new Node(rootP);
+        Logs.Details("inserindo em BTREE");
         add(metaIndice, NodeRoot, rootP);
-
     }
 
     static void printTree() {
@@ -321,6 +321,7 @@ public class Btree {
     }
 
     static long splitNode(Node node, long Nodeposition) {
+        Logs.Details("Split Node");
         // Criar novo nó e copiar metade dos índices e ponteiros
         Node newNode = new Node();
         for (int i = 0; i < Node.order / 2; i++) { // copiar metade dos elementos
@@ -343,6 +344,7 @@ public class Btree {
     }
 
     static void subir(MetaIndice elementoSubindo, long newNodePosition, long Nodeposition) {
+        Logs.Details("Subindo elemento na arvore");
         if (Nodeposition == rootP) { 
             Node newRoot = new Node();
             newRoot.addInNode(elementoSubindo, Nodeposition, newNodePosition);
@@ -413,12 +415,14 @@ public class Btree {
 
     static MetaIndice search(int id) {
         Node NodeRoot = new Node(rootP);
-        return search(id, NodeRoot);
+        return search(id, NodeRoot, 0);
     }
 
-    static MetaIndice search(int id, Node node) {
+    static MetaIndice search(int id, Node node, int level) {
         for (int i = 0; i < node.currentKeys; i++) {
             if (node.keys[i].getId() == id) {
+                String message = "Encontrado: " + node.keys[i].getId() + " na altura: " + level ;
+                Logs.Succeed(message);
                 return node.keys[i];
             }
             if (node.keys[i].getId() > id) {
@@ -426,14 +430,14 @@ public class Btree {
                     return null;
                 }
                 Node nextNode = new Node(node.children[i]);
-                return search(id, nextNode);
+                return search(id, nextNode, level + 1);
             }
         }
         if (node.isLeaf()) {
             return null;
         }
         Node nextNode = new Node(node.children[node.currentKeys]);
-        return search(id, nextNode);
+        return search(id, nextNode, level + 1);
     }
 
     static void updateIndex(MetaIndice metaIndice) {
@@ -441,7 +445,6 @@ public class Btree {
         updateIndex(metaIndice, root, rootP);
     }
 
-    
     static MetaIndice updateIndex(MetaIndice metaIndice, Node node, long Nodeposition) {
         for (int i = 0; i < node.currentKeys; i++) {
             if (node.keys[i].getId() == metaIndice.getId()) {

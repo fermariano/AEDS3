@@ -1,7 +1,11 @@
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.RandomAccessFile;
 
 class Bucket {
-    static int maxChaves = 2;
+    static int maxChaves = 8;
     int profundidadeLocal;
     int chavesPresentes;
     int registroId[];
@@ -31,13 +35,17 @@ class Bucket {
     Bucket(long posicao) {// ok
         try {
             raf.seek(posicao);
-            profundidadeLocal = raf.readInt();
-            chavesPresentes = raf.readInt();
+            byte[] data = new byte[sizeBytes()];
+            ByteArrayInputStream bais = new ByteArrayInputStream(data);
+            DataInputStream dis = new DataInputStream(bais);
+            raf.readFully(data);
+            profundidadeLocal = dis.readInt();
+            chavesPresentes = dis.readInt();
             registroId = new int[maxChaves];
             registroPos = new long[maxChaves];
             for (int i = 0; i < chavesPresentes; i++) {
-                registroId[i] = raf.readInt();
-                registroPos[i] = raf.readLong();
+                registroId[i] = dis.readInt();
+                registroPos[i] = dis.readLong();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -49,7 +57,7 @@ class Bucket {
     }
 
     static int sizeBytes() {
-        return 4 + 4 + 4 + maxChaves * 4 + maxChaves * 8;
+        return 4 + 4 + maxChaves * 4 + maxChaves * 8;
     }
 
     public void resetBucket() {
@@ -66,14 +74,17 @@ class Bucket {
 
     long writeBucket() {
         try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeInt(profundidadeLocal);
+            dos.writeInt(chavesPresentes);
+            for (int i = 0; i < maxChaves; i++) {
+                dos.writeInt(registroId[i]);
+                dos.writeLong(registroPos[i]);
+            }
             raf.seek(raf.length());
             long retorno = raf.getFilePointer();
-            raf.writeInt(profundidadeLocal);
-            raf.writeInt(chavesPresentes);
-            for (int i = 0; i < maxChaves; i++) {
-                raf.writeInt(registroId[i]);
-                raf.writeLong(registroPos[i]);
-            }
+            raf.write(baos.toByteArray());
             return retorno;
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,13 +94,16 @@ class Bucket {
 
     void writeBucket(long pos) {// ok
         try {
-            raf.seek(pos);
-            raf.writeInt(profundidadeLocal);
-            raf.writeInt(chavesPresentes);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeInt(profundidadeLocal);
+            dos.writeInt(chavesPresentes);
             for (int i = 0; i < maxChaves; i++) {
-                raf.writeInt(registroId[i]);
-                raf.writeLong(registroPos[i]);
+                dos.writeInt(registroId[i]);
+                dos.writeLong(registroPos[i]);
             }
+            raf.seek(pos);
+            raf.write(baos.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -202,6 +216,7 @@ public class Diretorio {
     }
 
     public static void inserir(MetaIndice reg) {
+        Logs.Details("Inserindo no Diretorio");
         if (reg == null)
             return;
 
@@ -233,6 +248,7 @@ public class Diretorio {
 
     public static void splitBucket(UnitPointer fullBucketP, Bucket fullBucket, MetaIndice reg) {
         MetaIndice[] chaves = new MetaIndice[Bucket.maxChaves + 1];
+        Logs.Details("Splitando Bucket");
 
         if (fullBucket.profundidadeLocal == profundidadeGlobal) { // se o bucket estiver no nivel maximo
             duplicarDiretorio();
@@ -269,6 +285,7 @@ public class Diretorio {
     }
 
     static void duplicarDiretorio() {
+        Logs.Details("Duplicando Diretorio");
         UnitPointer novosBuckets[] = new UnitPointer[(int) Math.pow(2, profundidadeGlobal)];
         for (int i = 0; i < Math.pow(2, profundidadeGlobal); i++) {// expande diretorio e faz apontar para os antigos
             UnitPointer buckeP = getHashPointer(i);
@@ -286,6 +303,7 @@ public class Diretorio {
 
             return new UnitPointer(DiretorioFile.readInt(), DiretorioFile.readLong());
         } catch (Exception e) {
+            Logs.Alert("deu ruim em getPointer -> hash");
             e.printStackTrace();
         }
         return null;
@@ -321,20 +339,22 @@ public class Diretorio {
         }
     }
 
-    static MetaIndice search(int id){
+    static MetaIndice search(int id) {
         int hash = Hash(id);
         UnitPointer BucketP = getHashPointer(hash);
         Bucket bucket = new Bucket(BucketP.Bucket);
         for (int i = 0; i < Bucket.maxChaves; i++) {
             if (bucket.registroId[i] == id) {
+                String message = "Indice encontrado em " + BucketP.numero + " na posicao " + i;
+                Logs.Succeed(message);
                 return new MetaIndice(bucket.registroId[i], bucket.registroPos[i]);
             }
         }
         return null;
     }
-    static void updateIndex(MetaIndice reg){
-        int hash = Hash(reg.getId());
 
+    static void updateIndex(MetaIndice reg) {
+        int hash = Hash(reg.getId());
         UnitPointer BucketP = getHashPointer(hash);
         Bucket bucket = new Bucket(BucketP.Bucket);
         for (int i = 0; i < Bucket.maxChaves; i++) {
@@ -346,7 +366,32 @@ public class Diretorio {
         }
     }
 
+    static void printDir() {
+        try {
+            UnitPointer p;
+            RandomAccessFile dirPrint = new RandomAccessFile("dirPrint.dat", "rw");
+            dirPrint.setLength(0);
+            String message = "Profundidade Global :" + profundidadeGlobal + "\n\n";
+            dirPrint.writeUTF(message);
+            for (int i = 0; true; i++) {
+                p = getHashPointer(i);
+                if (p == null) {
+                    break;
+                }
+                Bucket bkt = new Bucket(p.Bucket);
     
+                message = "DirPointer::" + p.numero + "  -> " + p.Bucket;
+                message += " -> Bucket : p:: " + bkt.profundidadeLocal + ": {";
+                for (int j = 0; j < bkt.chavesPresentes; j++) {
+                    message += bkt.registroId[j] + ":::";
+                }
+                message += "}\n";
+                dirPrint.writeUTF(message);
+            }
+        } catch (Exception e) {
+            
+        }
+    }
 
     public static class UnitPointer { // classe que representa um ponteiro para um bucket
         int numero;
@@ -363,5 +408,4 @@ public class Diretorio {
             this.Bucket = BucketPos;
         }
     }
-
 }

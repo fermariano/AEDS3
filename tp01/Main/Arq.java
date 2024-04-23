@@ -3,7 +3,6 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.io.IOException;
 
 public class Arq {
@@ -58,9 +57,11 @@ public class Arq {
             Arq.meta = new MetaData(raf);
             Musica.setLastID(raf.readInt()); // pega o ultimo id inserido
             Logs.Succeed("Arquivo aberto com sucesso!\nClasse Arq Iniciada com sucesso!");
+            Indices.start("Source/DataBase/indices.db");
             IndiceInvertido.start();
             Diretorio.start();
             Btree.start();
+            
         } catch (IOException e) {
             Logs.Alert("Erro ao abrir o arquivo: " + e.getMessage());
         }
@@ -201,6 +202,7 @@ public class Arq {
             ba = nova.toByteArray(); // atualiza lastID na classe mas não no arquivo
             Musica.setLastID(nova.getId()); // atualiza na classe
             writeLastID(Musica.getLastID()); // atualiza no arquivo
+            
             raf.seek(raf.length()); // joga o ponteiro do RAF para o final do arquivo
             long pos = raf.getFilePointer();
             meta.writeMetaData(ba.length); // escreve os metadados do registro
@@ -380,6 +382,46 @@ public class Arq {
                 Logs.Details("Inserindo : " + i);
             }
         }
+        Diretorio.printDir();
+    }
+
+    public static void searchAllHash() {
+        System.out.println("\n\n");
+        System.out.println("Buscando todos os índices na Hash");
+        MetaIndice meta[] = Indices.getAllIndices("Source/DataBase/indices.db");
+        double start = System.currentTimeMillis();
+        int notFound = 0;
+        int found = 0;
+        int totalIndices = meta.length;
+        int searched = 0;
+
+        for (int i = 0; i < totalIndices; i++) {
+            searched++;
+
+            Musica find = searchHash(meta[i].getId());
+            if (find == null) {
+                notFound++;
+            } else {
+                found++;
+            }
+
+            double percentage = (double) searched / totalIndices * 100;
+            double elapsedTime = (System.currentTimeMillis() - start) / 1000.0;
+            double assertiveness = (double) found / searched * 100;
+
+            System.out.print("\rProgress " + String.format("%.2f", percentage) + "% - Tempo: "
+                    + String.format("%.2f", elapsedTime) + " segundos - Assertividade: "
+                    + String.format("%.2f", assertiveness) + "%");
+        }
+        System.out.println();
+        double totalTime = (System.currentTimeMillis() - start) / 1000.0;
+        double assertiveness = (double) found / searched * 100;
+        Logs.Details("Busca concluída.");
+        Logs.Details("Tempo total: " + totalTime + " segundos");
+        Logs.Details("Total de índices encontrados: " + found);
+        Logs.Details("Total de índices não encontrados: " + notFound);
+        Logs.Details("Assertividade: " + String.format("%.2f", assertiveness) + "%");
+        System.out.println("Fim do teste de busca em Hash \n\n");
     }
 
     public static Musica getByIndice(long pos) {
@@ -401,7 +443,7 @@ public class Arq {
     public static Musica searchBtree(int ID) {
         MetaIndice meta = Btree.search(ID);
         if (meta != null) {
-            Logs.Succeed("Encontrado em Btree: " + meta.getId());
+            // Logs.Succeed("Encontrado em Btree: " + meta.getId());
             return getByIndice(meta.getPosicao());
         } else {
             Logs.Alert("Não encontrado");
@@ -409,26 +451,73 @@ public class Arq {
         }
     }
 
+    static void searchAllBtree() {
+        System.out.print("\n\n");
+        try {
+            MetaIndice meta[] = Indices.getAllIndices("Source/DataBase/indices.db");
+            double start = System.currentTimeMillis();
+            double end;
+            double total = 0;
+            double conferidos = 0;
+
+            for (int i = 0; i < meta.length; i++) {
+                if (meta[i] != null) {
+                    Musica music = searchBtree(meta[i].getId());
+                    total++;
+                    if (music != null) {
+                        conferidos++;
+                    }
+                }
+                double porcentagem = (conferidos / total) * 100;
+                double assertividade = (conferidos / total) * 100;
+                double elapsedTime = (System.currentTimeMillis() - start) / 1000.0;
+                System.out.print("\rProgress " + String.format("%.2f", porcentagem) + "% - Tempo: "
+                        + String.format("%.2f", elapsedTime) + " segundos - Assertividade: "
+                        + String.format("%.2f", assertividade) + "%");
+            }
+            System.out.println();
+            end = System.currentTimeMillis();
+            double totalTime = (end - start) / 1000.0;
+            double assertividadeFinal = (conferidos / total) * 100;
+            Logs.Succeed("Busca concluída.");
+            Logs.Succeed("Tempo total: " + totalTime + " segundos");
+            Logs.Succeed("Assertividade final: " + String.format("%.2f", assertividadeFinal) + "%");
+            System.out.println("Fim do teste de busca em Btree \n\n");
+        } catch (Exception e) {
+            Logs.Alert("Erro ao buscar todos os índices na Btree: " + e.getMessage());
+        }
+    }
     public static Musica searchHash(int ID) {
         MetaIndice meta = Diretorio.search(ID);
         if (meta != null) {
-            Logs.Succeed("Encontrado em HASH: " + meta.getId());
+
             return getByIndice(meta.getPosicao());
         } else {
             Logs.Alert("Não encontrado");
             return null;
         }
     }
-
-    static void addGenres(){
+    static void addGenres() {
         MetaIndice indices[] = Indices.getAllIndices("Source/DataBase/indices.db");
         for (int i = 0; i < indices.length; i++) {
-            Musica music = getByIndice(indices[i].getPosicao());
             IndiceInvertido.addIndice(indices[i]);
-            if(i % 1000 == 0){
+            if (i % 1000 == 0) {
                 Logs.Details("Inserindo : " + i);
             }
         }
     }
-
+    static void testePerformance() {
+        MetaIndice chaves[] = Indices.getAllIndices("Source/DataBase/indices.db");
+        double BtreeTime = System.currentTimeMillis();
+        for (int i = 0; i < chaves.length; i++) {
+            searchBtree(chaves[i].getId());
+        }
+        BtreeTime = System.currentTimeMillis() - BtreeTime;
+        double hashTime = System.currentTimeMillis();
+        for (int i = 0; i < chaves.length; i++) {
+            searchHash(chaves[i].getId());
+        }
+        hashTime = System.currentTimeMillis() - hashTime;
+        Logs.Details("Hash -> " + hashTime + "\nBtree -> " + BtreeTime + "");
+    }
 }

@@ -60,22 +60,31 @@ public class Indices {
         try {
             file = new RandomAccessFile(path, "rw");
             file.seek(0);
-            // le primeiras 12 indices errados
+            // Lê os primeiros 12 índices inválidos
             for (int i = 0; i < 12; i++) {
                 file.readInt();
                 file.readLong();
             }
-
-            MetaIndice[] indices = new MetaIndice[(int) (file.length() / 12)];
-            for (int i = 0; i < indices.length - 12; i++) {
-                indices[i] = new MetaIndice(file.readInt(), file.readLong());
+    
+            // Calcula o tamanho do array de índices
+            int totalIndices = (int) ((file.length() - 12 * 12) / 12);
+            MetaIndice[] indices = new MetaIndice[totalIndices];
+    
+            // Lê os índices válidos e os armazena no array
+            for (int i = 0; i < totalIndices; i++) {
+                int id = file.readInt();
+                long offset = file.readLong();
+                indices[i] = new MetaIndice(id, offset);
             }
             return indices;
         } catch (Exception e) {
             if (e instanceof java.io.EOFException) {
+                // Caso o arquivo tenha menos de 12 índices
+                return new MetaIndice[0];
             }
         }
         return null;
     }
+    
 
 }

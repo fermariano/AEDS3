@@ -7,7 +7,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class InterfaceMenu extends JFrame {
     private static boolean Running = true;
@@ -261,12 +260,15 @@ public class InterfaceMenu extends JFrame {
                         // Verifica se o texto contém "B" ou "H"
                         if (searchText.contains("B")) {
                             // Se contiver "B", chama a função para pesquisar na B-Tree
+                            Logs.Succeed("Pesquisando na B-Tree");
                             musica = Arq.searchBtree(ID);
                         } else if (searchText.contains("H")) {
                             // Se contiver "H", chama a função para pesquisar na Hash
+                            Logs.Succeed("Pesquisando em Hash");
                             musica = Arq.searchHash(ID);
                         } else {
                             // Caso contrário, realiza a pesquisa pelo ID
+                            Logs.Succeed("Pesquisando por ID sequencial");
                             musica = Arq.FindSongID(ID);
                         }
                     } else {
